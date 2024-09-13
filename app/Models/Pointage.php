@@ -11,11 +11,8 @@ class Pointage extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'type',
-        'motif',
-        'date',
-        'heure_present',
-        'user_id',
+        'user_id', 'type', 'motif', 'date', 'heure_present', 'heure_depart'
+
     ];
 
     public function user()

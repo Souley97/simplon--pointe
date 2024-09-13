@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\QRCodeController;
+use App\Http\Controllers\PointageController;
 use App\Http\Controllers\ApprenantController;
 
 
@@ -29,3 +30,6 @@ Route::middleware('auth:api')->group(function () {
 
     Route::post('/update-information', [UserController::class, 'updateInformation']);
     });
+    Route::post('/pointage/arrivee', [PointageController::class, 'pointageArrivee']);
+    Route::post('/pointage/depart', [PointageController::class, 'pointageDepart']);
+    Route::post('/pointage', [PointageController::class, 'pointage'])->name('pointage');

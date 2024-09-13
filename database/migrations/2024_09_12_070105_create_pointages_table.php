@@ -17,6 +17,7 @@ return new class extends Migration
         $table->string('motif')->nullable();
         $table->date('date');
         $table->time('heure_present')->nullable();
+        $table->time('heure_depart')->nullable();
         $table->foreignId('user_id')->constrained()->onDelete('cascade');
         $table->timestamps();
         });
