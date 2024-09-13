@@ -7,8 +7,11 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Auth;
+use App\Notifications\ApprenantInscriptionNotification;
+
 class ApprenantController extends Controller
 {
+
     public function inscrireApprenant(Request $request)
     {
         // Validation des données
@@ -30,18 +33,17 @@ class ApprenantController extends Controller
             ], 422);
         }
 
-        // Création de l'utilisateur
+        // Création de l'utilisateur avec le mot de passe
+        $password = $request->password; // On garde une version du mot de passe non crypté
         $user = User::create([
             'nom' => $request->nom,
             'prenom' => $request->prenom,
             'adresse' => $request->adresse,
             'telephone' => $request->telephone,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'password' => Hash::make($password), // Crypter le mot de passe
             'photo_profile' => $request->photo_profile,
             'sexe' => $request->sexe,
-
-
         ]);
 
         // Générer le matricule en combinant le prénom et un numéro aléatoire
@@ -57,10 +59,14 @@ class ApprenantController extends Controller
             $user->promotions()->attach($request->promotion_id);
         }
 
+        // Envoi de la notification par email avec les informations d'accès
+        $user->notify(new ApprenantInscriptionNotification($user, $password));
+
         return response()->json([
             'success' => true,
-            'message' => 'Apprenant inscrit avec succès',
+            'message' => 'Apprenant inscrit avec succès et notification envoyée par email',
             'user' => $user
         ], 201);
     }
+
 }
