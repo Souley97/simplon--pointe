@@ -147,7 +147,83 @@ class PointageController extends Controller
         ], 403);
      }
 
+     public function afficherPointagesAujourdHui(Request $request)
+     {
+         // Récupérer la date d'aujourd'hui
+    $dateAujourdhui = now()->toDateString();
 
+    // Récupérer les pointages pour aujourd'hui pour tous les utilisateurs
+    $pointages = Pointage::where('date', $dateAujourdhui)
+        ->with('user') // Charger les détails de l'utilisateur en même temps
+        ->get();
+
+    // Filtrer les utilisateurs pour obtenir uniquement les apprenants et formateurs
+    $usersAvecPointage = $pointages->filter(function ($pointage) {
+        return $pointage->user->hasRole(['Apprenant', 'Formateur']);
+    });
+
+    if ($usersAvecPointage->isEmpty()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Aucun apprenant ou formateur n\'a pointé aujourd\'hui.',
+        ], 404);
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Pointages des apprenants et formateurs récupérés avec succès.',
+        'pointages' => $usersAvecPointage,
+    ]);
+}
+public function afficherPointagesPromoAujourdHui(Request $request)
+{
+    // Validation des données d'entrée
+    $validator = validator($request->all(), [
+        'promo_id' => ['required', 'exists:promos,id'], // Vérifie que la promo existe
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'success' => false,
+            'errors' => $validator->errors(),
+        ], 422);
+    }
+
+    // Récupérer la date d'aujourd'hui
+    $dateAujourdhui = now()->toDateString();
+
+    // Récupérer l'ID de la promotion depuis la requête
+    $promotionId = $request->input('promo_id');
+
+    // Récupérer les utilisateurs (apprenants et formateurs) qui appartiennent à la promotion
+    $users = User::whereHas('promos', function($query) use ($promotionId) {
+        $query->where('promos.id', $promotionId);
+    })
+    ->whereHas('roles', function($query) {
+        $query->whereIn('name', ['Apprenant', 'Formateur']);
+    })
+    ->pluck('id'); // Récupère uniquement les IDs des utilisateurs
+
+    // Récupérer les pointages des utilisateurs pour aujourd'hui
+    $pointages = Pointage::whereIn('user_id', $users)
+        ->where('date', $dateAujourdhui)
+        ->with('user') // Charger les informations de l'utilisateur en même temps
+        ->get();
+
+    // Vérifier si des pointages ont été trouvés
+    if ($pointages->isEmpty()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Aucun apprenant ou formateur n\'a pointé aujourd\'hui dans cette promotion.',
+        ], 404);
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Pointages des apprenants et formateurs récupérés avec succès.',
+        'pointages' => $pointages,
+    ]);
+}
 
     /**
      * Show the form for creating a new resource.

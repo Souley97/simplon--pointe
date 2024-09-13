@@ -9,10 +9,10 @@ class ApprenantPromo extends Model
 {
     use HasFactory;
     protected $table = 'apprenant_promo'; // Nom de la table de liaison
-    public $timestamps = false; // Si tu n'as pas besoin de colonnes `created_at` et `updated_at`
+    public $timestamps = false;
 
     protected $fillable = [
-        'apprenant_id',
+        'user_id', // Utiliser 'user_id' au lieu de 'apprenant_id'
         'promo_id',
     ];
 }

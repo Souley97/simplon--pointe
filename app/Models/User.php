@@ -82,6 +82,7 @@ public function pointages()
     return $this->hasMany(Pointage::class);
 }
 
+
 public function justificatifs()
 {
     return $this->hasManyThrough(Justificatif::class, Pointage::class, 'user_id', 'pointage_id');
@@ -89,8 +90,8 @@ public function justificatifs()
 // Dans le modèle User
 public function promos()
 {
-    return $this->belongsToMany(Promo::class, 'apprenant_promo'); // Si la table pivot est apprenant_promo
-}
+    return $this->belongsToMany(Promo::class, 'apprenant_promo');
+}   
 public function getJWTIdentifier()
 {
     return $this->getKey();
