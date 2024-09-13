@@ -27,6 +27,10 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/formateur/inscrire', [AuthController::class, 'inscrireFormateur']);
     Route::post('/chef-de-projet/inscrire', [AuthController::class, 'inscrireChefDeProjet']);
     Route::post('/vigile/inscrire', [AuthController::class, 'inscrireVigile']);
+    Route::get('/pointages/semaines', [PointageController::class, 'pointageParSemaine'])->name('pointage/semaine');
+
+
+
 
     Route::post('/update-information', [UserController::class, 'updateInformation']);
     });
@@ -35,3 +39,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/pointages/all', [PointageController::class, 'afficherPointagesAujourdHui'])->name('pointage');
     Route::get('/pointages/promo/all', [PointageController::class, 'afficherPointagesPromoAujourdHui'])->name('pointage');
     Route::get('/pointages/promo', [PointageController::class, 'afficherPointagesPromo'])->name('pointagePromo');
+    Route::get('/pointages/moi', [PointageController::class, 'MesPointages'])->name('pointage/moi');
+    Route::get('/pointages/aujourdhui', [PointageController::class, 'pointageAujourdhui'])->name('pointage/user');
+
+

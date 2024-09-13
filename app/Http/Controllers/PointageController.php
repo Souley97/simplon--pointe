@@ -285,6 +285,168 @@ public function afficherPointagesPromo(Request $request)
     ]);
 }
 
+public function MesPointages()
+{
+    // Récupérer l'utilisateur connecté
+    $user = auth()->user();
+
+    // Récupérer les promotions auxquelles l'utilisateur est rattaché (en tant qu'apprenant ou formateur)
+    $promo = Promo::whereHas('apprenants', function($query) use ($user) {
+        $query->where('users.id', $user->id);
+    })
+    ->orWhere('formateur_id', $user->id)
+    ->first();
+
+    // Vérifier si l'utilisateur est rattaché à une promotion
+    if (!$promo) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Vous n\'êtes rattaché à aucune promotion.',
+        ], 404);
+    }
+
+    // Récupérer les pointages de l'utilisateur connecté depuis le début de la promotion
+    $pointages = Pointage::where('user_id', $user->id)
+        ->whereBetween('date', [$promo->date_debut, now()->toDateString()]) // Entre la date de début de la promo et aujourd'hui
+        ->get();
+
+    // Vérifier si des pointages existent
+    if ($pointages->isEmpty()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Aucun pointage trouvé depuis le début de la promotion.',
+        ], 404);
+    }
+
+    // Retourner les pointages trouvés
+    return response()->json([
+        'success' => true,
+        'message' => 'Vos pointages depuis le début de la promotion ont été récupérés avec succès.',
+        'pointages' => $pointages,
+    ]);
+}
+
+// pointageAujourdhui
+    public function pointageAujourdhui()
+    {
+        // Récupérer l'utilisateur connecté
+        $user = auth()->user();
+
+        // Récupérer la date d'aujourd'hui
+        $dateAujourdhui = now()->toDateString();
+
+        // Récupérer les pointages de l'utilisateur connecté pour aujourd'hui
+        $pointages = Pointage::where('user_id', $user->id)
+            ->where('date', $dateAujourdhui)
+            ->get();
+
+        // Vérifier si des pointages existent
+        if ($pointages->isEmpty()) {
+            return response()->json([
+               'success' => false,
+               'message' => 'Aucun pointage trouvé pour aujourd\'hui.',
+            ], 404);
+        }
+        return response()->json([
+            'success' => true,
+           'message' => 'Votre pointage pour aujourd\'hui a été récupéré avec succès.',
+            'pointages' => $pointages,
+        ]);
+
+    }
+    // pointageParSemaine
+    public function pointageParSemaine()
+    {
+        // Récupérer l'utilisateur connecté
+        $user = auth()->user();
+
+        // Récupérer la date d'aujourd'hui
+        $dateAujourdhui = now()->toDateString();
+
+        // Récupérer le premier jour de la semaine pour la date d'aujourd'hui
+        $premierJourSemaine = now()->startOfWeek()->toDateString();
+
+        // Récupérer les pointages de l'utilisateur connecté pour la semaine
+        $pointages = Pointage::where('user_id', $user->id)
+            ->whereBetween('date', [$premierJourSemaine, $dateAujourdhui])
+            ->get();
+
+        // Vérifier si des pointages existent
+        if ($pointages->isEmpty()) {
+            return response()->json([
+               'success' => true,
+               'message' => 'Aucun pointage trouvé pour cette semaine.',
+            ], 404);
+
+            return response()->json([
+               'success' => false,
+               'message' => 'Vos pointages pour cette semaine ont été récupérés avec succès.',
+                'pointages' => $pointages,
+            ]);
+        }
+        return response()->json([
+            'success' => true,
+            'pointages' => $pointages,
+        ]);
+
+
+    }
+
+//  formateur auth voir pointages de ses promos :
+    public function pointagesFormateurPromo($id)
+    {
+        // Récupérer le formateur avec les promos
+        $formateur = User::find($id);
+
+        // Vérifier si le formateur existe
+        if (!$formateur) {
+            return response()->json([
+               'success' => false,
+               'message' => 'Le formateur n\'existe pas.',
+            ], 404);
+        }
+
+        // Récupérer les promos du formateur
+        $promos = $formateur->promos;
+
+        // Vérifier si le formateur est rattaché à des promos
+        if ($promos->isEmpty()) {
+            return response()->json([
+               'success' => false,
+               'message' => 'Le formateur n\'est rattaché à aucune promotion.',
+            ], 404);
+        }
+        // Récupérer les utilisateurs (apprenants) qui appartiennent aux promos du formateur
+        $users = User::whereHas('promos', function($query) use ($promos) {
+            $query->whereIn('promos.id', $promos->pluck('id'));
+        })
+        ->whereHas('roles', function($query) {
+            $query->where('name', 'Apprenant');
+        })
+        ->pluck('id');
+
+        // Récupérer les pointages de tous les apprenants de ces promos
+        $pointages = Pointage::whereIn('user_id', $users)
+            ->get();
+
+        // Vérifier si des pointages existent
+        if ($pointages->isEmpty()) {
+            return response()->json([
+               'success' => false,
+               'message' => 'Aucun pointage trouvé pour les apprenants de ces promos.',
+            ], 404);
+        }
+
+        return response()->json([
+           'success' => true,
+            'pointages ' => $pointages,
+            'formateur' => $formateur,
+        ]);
+    }
+
+        // Récupérer les pointages de tous les apprenants de ces prom
+
+
     /**
      * Show the form for creating a new resource.
      */
