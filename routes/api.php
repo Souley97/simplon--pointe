@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\PromoController;
 use App\Http\Controllers\QRCodeController;
 use App\Http\Controllers\PointageController;
 use App\Http\Controllers\ApprenantController;
@@ -30,6 +31,13 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/pointages/semaines', [PointageController::class, 'pointageParSemaine'])->name('pointage/semaine');
 
 
+    Route::get('/promos/formateur', [PromoController::class, 'mesPromos']);
+    Route::get('/promos/encours', [PromoController::class, 'mesPromosEncours']);
+    Route::get('/promos/terminer', [PromoController::class, 'mesPromosTermine']);
+
+    Route::post('/promos', [PromoController::class, 'store']);
+    Route::post('/promos', [PromoController::class, 'update']);
+
 
 
     Route::post('/update-information', [UserController::class, 'updateInformation']);
@@ -43,3 +51,13 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/pointages/aujourdhui', [PointageController::class, 'pointageAujourdhui'])->name('pointage/user');
 
 
+
+// Mise à jour d'une promotion par un formateur
+Route::post('/promos/{promo}', [PromoController::class, 'update'])->middleware('auth:api');
+Route::get('/promos/{promo}', [PromoController::class, 'show'])->middleware('auth:api');
+
+// Afficher les pointages d'une promotion aujourd'hui
+Route::get('/promos/{promo}/pointages-aujourdhui', [PromoController::class, 'afficherPointagesPromoAujourdHui'])->middleware('auth:api');
+
+// Mes pointages (utilisateur connecté)
+Route::get('/mes-pointages', [PromoController::class, 'mesPointages'])->middleware('auth:api');

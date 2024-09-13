@@ -393,56 +393,8 @@ public function MesPointages()
     }
 
 //  formateur auth voir pointages de ses promos :
-    public function pointagesFormateurPromo($id)
-    {
-        // Récupérer le formateur avec les promos
-        $formateur = User::find($id);
 
-        // Vérifier si le formateur existe
-        if (!$formateur) {
-            return response()->json([
-               'success' => false,
-               'message' => 'Le formateur n\'existe pas.',
-            ], 404);
-        }
 
-        // Récupérer les promos du formateur
-        $promos = $formateur->promos;
-
-        // Vérifier si le formateur est rattaché à des promos
-        if ($promos->isEmpty()) {
-            return response()->json([
-               'success' => false,
-               'message' => 'Le formateur n\'est rattaché à aucune promotion.',
-            ], 404);
-        }
-        // Récupérer les utilisateurs (apprenants) qui appartiennent aux promos du formateur
-        $users = User::whereHas('promos', function($query) use ($promos) {
-            $query->whereIn('promos.id', $promos->pluck('id'));
-        })
-        ->whereHas('roles', function($query) {
-            $query->where('name', 'Apprenant');
-        })
-        ->pluck('id');
-
-        // Récupérer les pointages de tous les apprenants de ces promos
-        $pointages = Pointage::whereIn('user_id', $users)
-            ->get();
-
-        // Vérifier si des pointages existent
-        if ($pointages->isEmpty()) {
-            return response()->json([
-               'success' => false,
-               'message' => 'Aucun pointage trouvé pour les apprenants de ces promos.',
-            ], 404);
-        }
-
-        return response()->json([
-           'success' => true,
-            'pointages ' => $pointages,
-            'formateur' => $formateur,
-        ]);
-    }
 
         // Récupérer les pointages de tous les apprenants de ces prom
 
