@@ -6,6 +6,7 @@ namespace App\Models;
 use App\Models\Promo;
 use App\Models\Pointage;
 use App\Models\Justificatif;
+use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -13,6 +14,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
+    use HasRoles;
+
 
     /**
      * The attributes that are mass assignable.
@@ -69,6 +72,10 @@ public function justificatifs()
 {
     return $this->hasManyThrough(Justificatif::class, Pointage::class, 'user_id', 'pointage_id');
 }
-
+// Dans le modèle User
+public function promos()
+{
+    return $this->belongsToMany(Promo::class, 'apprenant_promo'); // Si la table pivot est apprenant_promo
+}
 
 }
