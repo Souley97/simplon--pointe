@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('promos', function (Blueprint $table) {
             $table->id();
-            $table->string('nom');
+            $table->string('nom')->unique();
             $table->date('date_debut');
             $table->date('date_fin');
             $table->enum('statut', ['encours', 'termine']);

@@ -11,7 +11,11 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class User extends Authenticatable
+use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
+
+use Illuminate\Support\Str;
+
+class User extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable;
     use HasRoles;
@@ -29,11 +33,21 @@ class User extends Authenticatable
         'telephone',
         'adresse',
         'email',
-        'mot_de_passe',
+        'password',
         'statut',
         'sexe',
         'photo_profile',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($user) {
+            // Générer le matricule en combinant le prénom et un numéro aléatoire
+            $user->matricule = Str::slug($user->prenom) . '-' . Str::random(5);
+        });
+    }
 
     /**
      * The attributes that should be hidden for serialization.
@@ -76,6 +90,20 @@ public function justificatifs()
 public function promos()
 {
     return $this->belongsToMany(Promo::class, 'apprenant_promo'); // Si la table pivot est apprenant_promo
+}
+public function getJWTIdentifier()
+{
+    return $this->getKey();
+}
+
+/**
+ * Return a key value array, containing any custom claims to be added to the JWT.
+ *
+ * @return array
+ */
+public function getJWTCustomClaims()
+{
+    return [];
 }
 
 }

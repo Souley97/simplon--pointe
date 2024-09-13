@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('telephone')->unique();
             $table->string('adresse');
             $table->string('email')->unique();
-            $table->string('mot_de_passe');
+            $table->string('password');
             $table->boolean('statut')->default(true);
             $table->enum('sexe', ['homme', 'femme']);
             $table->string('photo_profile')->nullable();
