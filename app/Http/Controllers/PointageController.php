@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Promo;
 use App\Models\Pointage;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -215,6 +216,65 @@ public function afficherPointagesPromoAujourdHui(Request $request)
         return response()->json([
             'success' => false,
             'message' => 'Aucun apprenant ou formateur n\'a pointé aujourd\'hui dans cette promotion.',
+        ], 404);
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Pointages des apprenants et formateurs récupérés avec succès.',
+        'pointages' => $pointages,
+    ]);
+}
+
+
+public function afficherPointagesPromo(Request $request)
+{
+    // Validation des données d'entrée
+    $validator = validator($request->all(), [
+        'promo_id' => ['required', 'exists:promos,id'], // Vérifie que la promo existe
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'success' => false,
+            'errors' => $validator->errors(),
+        ], 422);
+    }
+
+    // Récupérer l'ID de la promotion depuis la requête
+    $promotionId = $request->input('promo_id');
+
+    // Récupérer la promotion avec sa date de début
+    $promotion = Promo::find($promotionId);
+
+    // Si la promotion n'est pas trouvée (par sécurité)
+    if (!$promotion) {
+        return response()->json([
+            'success' => false,
+            'message' => 'La promotion n\'existe pas.',
+        ], 404);
+    }
+
+    // Récupérer les utilisateurs (apprenants et formateurs) qui appartiennent à la promotion
+    $users = User::whereHas('promos', function($query) use ($promotionId) {
+        $query->where('promos.id', $promotionId);
+    })
+    ->whereHas('roles', function($query) {
+        $query->whereIn('name', ['Apprenant', 'Formateur']);
+    })
+    ->pluck('id'); // Récupérer uniquement les IDs des utilisateurs
+
+    // Récupérer les pointages depuis la date de début de la promotion jusqu'à aujourd'hui
+    $pointages = Pointage::whereIn('user_id', $users)
+        ->whereBetween('date', [$promotion->date_debut, now()->toDateString()]) // Filtrer entre la date de début et aujourd'hui
+        ->with('user') // Charger les informations de l'utilisateur
+        ->get();
+
+    // Vérifier si des pointages ont été trouvés
+    if ($pointages->isEmpty()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Aucun pointage trouvé pour cette promotion depuis sa date de début.',
         ], 404);
     }
 
