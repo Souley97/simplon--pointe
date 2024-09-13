@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\QRCodeController;
 use App\Http\Controllers\ApprenantController;
 
 
@@ -16,6 +17,7 @@ Route::get('/user', function (Request $request) {
 Route::post('/logout', [AuthController::class, 'logout']);
 Route::post('/login', [AuthController::class, 'login']);
 
+Route::get('/qr/{matricule}', [QRCodeController::class, 'showQr']);
 
 Route::middleware('auth:api')->group(function () {
 
@@ -25,5 +27,5 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/chef-de-projet/inscrire', [AuthController::class, 'inscrireChefDeProjet']);
     Route::post('/vigile/inscrire', [AuthController::class, 'inscrireVigile']);
 
+    Route::post('/update-information', [UserController::class, 'updateInformation']);
     });
-    Route::middleware('auth:api')->post('/update-information', [UserController::class, 'updateInformation']);
