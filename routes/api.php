@@ -10,17 +10,18 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::post('/apprenant/inscrire', [ApprenantController::class, 'inscrireApprenant']);
+
+// Routes pour authentification et déconnexion
+Route::post('/logout', [AuthController::class, 'logout']);
 Route::post('/login', [AuthController::class, 'login']);
 
 
-use App\Notifications\ApprenantInscriptionNotification;
-use Illuminate\Support\Facades\Notification;
+Route::middleware('auth:api')->group(function () {
 
-// Ajoutez ce code dans une route ou un contrôleur
-Route::get('/test-notification', function () {
-    $user = \App\Models\User::first(); // Assurez-vous d'avoir un utilisateur pour tester
-    Notification::route('mail', $user->email)
-        ->notify(new ApprenantInscriptionNotification($user, 'password123'));
-    return 'Notification sent!';
-});
+    // Routes pour inscription d'apprenants , formateurs, ChefDeProjers, Vigiles
+    Route::post('/apprenant/inscrire', [ApprenantController::class, 'inscrireApprenant']);
+    Route::post('/formateur/inscrire', [AuthController::class, 'inscrireFormateur']);
+    Route::post('/chef-de-projet/inscrire', [AuthController::class, 'inscrireChefDeProjet']);
+    Route::post('/vigile/inscrire', [AuthController::class, 'inscrireVigile']);
+
+    });
