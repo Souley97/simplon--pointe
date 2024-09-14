@@ -82,3 +82,4 @@ Route::post('/fabriques/{fabrique}', [FabriqueController::class, 'update']);
 Route::delete('/fabriques/{fabrique}', [FabriqueController::class, 'destroy']);
 Route::get('/fabriques/{id}/promos', [FabriqueController::class, 'promos']);
 
+Route::post('/apprenants/import', [ApprenantController::class, 'inscrireApprenantsExcel']);

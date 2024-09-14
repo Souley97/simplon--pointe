@@ -3,48 +3,70 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Notification;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Notification;
 
 class ApprenantInscriptionNotification extends Notification
 {
     use Queueable;
 
-    public $user;
-    public $password;
+    protected $user;
+    protected $password;
 
+    /**
+     * Create a new notification instance.
+     *
+     * @param $user
+     * @param $password
+     */
     public function __construct($user, $password)
     {
         $this->user = $user;
         $this->password = $password;
     }
 
+    /**
+     * Get the notification's delivery channels.
+     *
+     * @param mixed $notifiable
+     * @return array
+     */
     public function via($notifiable)
     {
-        return ['mail', 'database']; // Inclure 'database' si vous stockez les notifications en base
+        return ['mail'];
     }
 
+    /**
+     * Get the mail representation of the notification.
+     *
+     * @param mixed $notifiable
+     * @return \Illuminate\Notifications\Messages\MailMessage
+     */
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->subject('Vos informations de connexion à Kaay Point')
-            ->greeting('Bonjour ' . $this->user->prenom . '!')
-            ->line('Vous avez été inscrit avec succès sur Kaay Point.')
+            ->subject('Inscription sur la plateforme')
+            ->greeting('Bonjour ' . $this->user->prenom . ' ' . $this->user->nom . ',')
+            ->line('Vous avez été inscrit avec succès sur notre plateforme.')
             ->line('Voici vos informations de connexion :')
-            ->line('Email : ' . $this->user->email)
-            ->line('Mot de passe : ' . $this->password)
-            ->line('Matricule : ' . $this->user->matricule)
-            ->action('Accéder à Kaay Point', url('/'))
-            ->line('Merci d\'utiliser Kaay Point !');
+            ->line('**Email** : ' . $this->user->email)
+            ->line('**Mot de passe** : ' . $this->password)
+            ->line('Nous vous recommandons de changer ce mot de passe après votre première connexion.')
+            ->action('Accéder à la plateforme', url('/login'))
+            ->line('Merci de faire partie de notre communauté.');
     }
 
+    /**
+     * Get the array representation of the notification.
+     *
+     * @param mixed $notifiable
+     * @return array
+     */
     public function toArray($notifiable)
     {
         return [
             'user_id' => $this->user->id,
             'email' => $this->user->email,
-            'matricule' => $this->user->matricule,
         ];
     }
 }
