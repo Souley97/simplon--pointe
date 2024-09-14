@@ -11,7 +11,7 @@ class StoreFabriqueRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,10 @@ class StoreFabriqueRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'nom' => 'required|string|min:3|max:20',
+            'localisation' => 'required|string|min:3|max:100',
+
+
         ];
     }
 }

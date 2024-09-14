@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Formation;
 use App\Http\Requests\StoreFormationRequest;
 use App\Http\Requests\UpdateFormationRequest;
-use App\Models\Formation;
+
+use Illuminate\Http\Request;
 
 class FormationController extends Controller
 {
@@ -13,54 +15,79 @@ class FormationController extends Controller
      */
     public function index()
     {
-        //
+        $formations = Formation::all();
+        return response()->json($formations);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    // Créer une nouvelle formation
+    public function store(Request $request)
     {
-        //
+
+
+        $formation = Formation::create($request->all());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Formation créée avec succès.',
+            'formation' => $formation,
+        ], 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreFormationRequest $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
+    // Afficher une formation spécifique
     public function show(Formation $formation)
     {
-        //
+        return response()->json($formation);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Formation $formation)
+    // Mettre à jour une formation
+    public function update(Request $request, Formation $formation)
     {
-        //
+        $request->validate([
+            'nom' => 'required|string|max:50',
+
+        ]);
+
+        $formation->update($request->all());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Formation mise à jour avec succès.',
+            'formation' => $formation,
+        ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateFormationRequest $request, Formation $formation)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
+    // Supprimer une formation
     public function destroy(Formation $formation)
     {
-        //
+        $formation->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Formation supprimée avec succès.',
+        ]);
     }
+
+    // les promos dans un formation
+
+    public function promos($id)
+    {
+        // Récupérer la formation avec ses promos
+        $formation = Formation::with('promos')->find($id);
+
+        // Vérifier si la formation existe
+        if (!$formation) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Formation non trouvée.',
+            ], 404);
+        }
+
+        // Retourner les promos associées à la formation
+        return response()->json([
+            'success' => true,
+            'formation' => $formation->nom,
+            'promos' => $formation->promos, // Liste des promos de la formation
+        ]);
+    }
+
 }

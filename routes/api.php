@@ -6,8 +6,10 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PromoController;
 use App\Http\Controllers\QRCodeController;
+use App\Http\Controllers\FabriqueController;
 use App\Http\Controllers\PointageController;
 use App\Http\Controllers\ApprenantController;
+use App\Http\Controllers\FormationController;
 
 
 Route::get('/user', function (Request $request) {
@@ -61,3 +63,22 @@ Route::get('/promos/{promo}/pointages-aujourdhui', [PromoController::class, 'aff
 
 // Mes pointages (utilisateur connecté)
 Route::get('/mes-pointages', [PromoController::class, 'mesPointages'])->middleware('auth:api');
+
+
+
+Route::get('/formations', [FormationController::class, 'index']);
+Route::post('/formations', [FormationController::class, 'store']);
+Route::get('/formations/{formation}', [FormationController::class, 'show']);
+Route::post('/formations/{formation}', [FormationController::class, 'update']);
+Route::delete('/formations/{formation}', [FormationController::class, 'destroy']);
+Route::get('/formations/{id}/promos', [FormationController::class, 'promos']);
+
+
+
+Route::get('/fabriques', [FabriqueController::class, 'index']);
+Route::post('/fabriques', [FabriqueController::class, 'store']);
+Route::get('/fabriques/{fabrique}', [FabriqueController::class, 'show']);
+Route::post('/fabriques/{fabrique}', [FabriqueController::class, 'update']);
+Route::delete('/fabriques/{fabrique}', [FabriqueController::class, 'destroy']);
+Route::get('/fabriques/{id}/promos', [FabriqueController::class, 'promos']);
+
