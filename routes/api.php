@@ -12,9 +12,9 @@ use App\Http\Controllers\ApprenantController;
 use App\Http\Controllers\FormationController;
 
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+// Route::get('/user', function (Request $request) {
+//     return $request->user();
+// })->middleware('auth:sanctum');
 
 
 // Routes pour authentification et déconnexion
@@ -23,7 +23,7 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::get('/qr/{matricule}', [QRCodeController::class, 'showQr']);
 
-Route::middleware('auth:api')->group(function () {
+// Route::middleware('auth:api')->group(function () {
 
     // Routes pour inscription d'apprenants , formateurs, ChefDeProjers, Vigiles
     Route::post('/apprenant/inscrire', [ApprenantController::class, 'inscrireApprenant']);
@@ -43,7 +43,7 @@ Route::middleware('auth:api')->group(function () {
 
 
     Route::post('/update-information', [UserController::class, 'updateInformation']);
-    });
+    // });
     Route::post('/pointage/arrivee', [PointageController::class, 'pointageArrivee']);
     Route::post('/pointage/depart', [PointageController::class, 'pointageDepart']);
     Route::get('/pointages/all', [PointageController::class, 'afficherPointagesAujourdHui'])->name('pointage');
@@ -56,7 +56,7 @@ Route::middleware('auth:api')->group(function () {
 
 // Mise à jour d'une promotion par un formateur
 Route::post('/promos/{promo}', [PromoController::class, 'update'])->middleware('auth:api');
-Route::get('/promos/{promo}', [PromoController::class, 'show'])->middleware('auth:api');
+Route::get('/promos/{promo}', [PromoController::class, 'show']);
 
 // Afficher les pointages d'une promotion aujourd'hui
 Route::get('/promos/{promo}/pointages-aujourdhui', [PromoController::class, 'afficherPointagesPromoAujourdHui'])->middleware('auth:api');
@@ -83,3 +83,38 @@ Route::delete('/fabriques/{fabrique}', [FabriqueController::class, 'destroy']);
 Route::get('/fabriques/{id}/promos', [FabriqueController::class, 'promos']);
 
 Route::post('/apprenants/import', [ApprenantController::class, 'inscrireApprenantsExcel']);
+
+Route::middleware('auth:api')->group(function () {
+
+// routes/api.php
+Route::get('/user/role', function (Request $request) {
+    $user = $request->user();
+
+    if ($user->hasRole('Formateur')) {
+        return response()->json(['role' => 'Formateur']);
+    } elseif ($user->hasRole('Apprenant')) {
+        return response()->json(['role' => 'Apprenant']);
+    } elseif ($user->hasRole('Vigile')) {
+        return response()->json(['role' => 'Vigile']);
+    } elseif ($user->hasRole('Chef-de-Projet')) {
+        return response()->json(['role' => 'Chef de projet']);
+    } elseif ($user->hasRole('Administrateur')) {
+        return response()->json(['role' => 'Administrateur']);
+    }
+
+    return response()->json(['role' => 'Unknown'], 404);
+
+
+    // routes/api.php
+
+
+});
+});
+// routes/web.php
+
+Route::middleware('auth:api')->get('/user', function (Request $request) {
+    return response()->json([
+        'user' => $request->user(),
+        'role' => $request->user()->roles->pluck('name') // Renvoie les noms des rôles
+    ]);
+});
