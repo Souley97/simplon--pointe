@@ -45,6 +45,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::post('/update/information', [UserController::class, 'updateInformation']);
     });
+
     Route::post('/pointage/arrivee', [PointageController::class, 'pointageArrivee']);
     Route::post('/pointage/depart', [PointageController::class, 'pointageDepart']);
     Route::get('/pointages/all', [PointageController::class, 'afficherPointagesAujourdHui'])->name('pointage');
