@@ -23,7 +23,7 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::get('/qr/{matricule}', [QRCodeController::class, 'showQr']);
 
-Route::middleware('auth:api')->group(function () {
+// Route::middleware('auth:api')->group(function () {
 
     // Routes pour inscription d'apprenants , formateurs, ChefDeProjers, Vigiles
     Route::post('/apprenant/inscrire', [ApprenantController::class, 'inscrireApprenant']);
@@ -43,8 +43,13 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/pointages/moi/apprenant', [ApprenantController::class, 'MesPointages'])->name('pointage.moi');
 
 
+<<<<<<< HEAD
     Route::post('/update/information', [UserController::class, 'updateInformation']);
     });
+=======
+    Route::post('/update-information', [UserController::class, 'updateInformation']);
+    // });
+>>>>>>> 69670e1940f9e77da4b4f5b30aa722e09b8f54fd
     Route::post('/pointage/arrivee', [PointageController::class, 'pointageArrivee']);
     Route::post('/pointage/depart', [PointageController::class, 'pointageDepart']);
     Route::get('/pointages/all', [PointageController::class, 'afficherPointagesAujourdHui'])->name('pointage');
