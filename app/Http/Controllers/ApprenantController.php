@@ -3,12 +3,14 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Promo;
+use App\Models\Pointage;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Spatie\Permission\Models\Role;
+// Xlsx
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-// Xlsx
 use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
 use App\Notifications\ApprenantInscriptionNotification;
@@ -165,6 +167,52 @@ class ApprenantController extends Controller
             ], 500);
         }
     }
+
+   // MesPointages apprenant connecté avec option de filtrage par mois ou par semaine
+public function MesPointages(Request $request)
+{
+    $user = auth()->user();
+    $mois = $request->input('mois');
+    $annee = $request->input('annee');
+    $semaine = $request->input('semaine'); // Nouvelle entrée pour la semaine
+
+    // Vérification des paramètres mois, année ou semaine
+    if (!$mois || !$annee) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Les paramètres mois et année sont requis.',
+        ], 400);
+    }
+
+    // Si un numéro de semaine est fourni, calculer les dates de début et de fin de la semaine
+    if ($semaine) {
+        $date_debut = Carbon::now()->setISODate($annee, $semaine)->startOfWeek();
+        $date_fin = Carbon::now()->setISODate($annee, $semaine)->endOfWeek();
+    } else {
+        // Si aucune semaine n'est fournie, utiliser le mois et l'année pour récupérer les dates de début et de fin du mois
+        $date_debut = Carbon::createFromDate($annee, $mois, 1)->startOfMonth();
+        $date_fin = Carbon::createFromDate($annee, $mois, 1)->endOfMonth();
+    }
+
+    // Récupérer les pointages de l'utilisateur pour la période sélectionnée
+    $pointages = Pointage::where('user_id', $user->id)
+        ->whereBetween('date', [$date_debut, $date_fin])
+        ->get();
+
+    if ($pointages->isEmpty()) {
+        return response()->json([
+            'success' => true,
+            'message' => 'Aucun pointage trouvé pour cette période.',
+        ], 404);
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Pointages récupérés avec succès.',
+        'pointages' => $pointages,
+    ]);
+}
+
 
 
 }

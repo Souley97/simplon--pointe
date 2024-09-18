@@ -23,7 +23,7 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::get('/qr/{matricule}', [QRCodeController::class, 'showQr']);
 
-// Route::middleware('auth:api')->group(function () {
+Route::middleware('auth:api')->group(function () {
 
     // Routes pour inscription d'apprenants , formateurs, ChefDeProjers, Vigiles
     Route::post('/apprenant/inscrire', [ApprenantController::class, 'inscrireApprenant']);
@@ -40,17 +40,18 @@ Route::get('/qr/{matricule}', [QRCodeController::class, 'showQr']);
     Route::post('/promos', [PromoController::class, 'store']);
     Route::post('/promos', [PromoController::class, 'update']);
 
+    Route::get('/pointages/moi/apprenant', [ApprenantController::class, 'MesPointages'])->name('pointage.moi');
 
 
-    Route::post('/update-information', [UserController::class, 'updateInformation']);
-    // });
+    Route::post('/update/information', [UserController::class, 'updateInformation']);
+    });
     Route::post('/pointage/arrivee', [PointageController::class, 'pointageArrivee']);
     Route::post('/pointage/depart', [PointageController::class, 'pointageDepart']);
     Route::get('/pointages/all', [PointageController::class, 'afficherPointagesAujourdHui'])->name('pointage');
     Route::get('/pointages/promo/all', [PointageController::class, 'afficherPointagesPromoAujourdHui'])->name('pointage');
     Route::get('/pointages/promo', [PointageController::class, 'afficherPointagesPromo'])->name('pointagePromo');
     Route::get('/pointages/moi', [PointageController::class, 'MesPointages'])->name('pointage/moi');
-    Route::get('/pointages/aujourdhui', [PointageController::class, 'pointageAujourdhui'])->name('pointage/user');
+    Route::get('/pointages/aujourdhui', [PointageController::class, 'afficherPointagesAujourdHui'])->name('pointage/user');
 
 
 

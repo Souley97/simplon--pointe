@@ -71,7 +71,7 @@ class PointageController extends Controller
 
          // Déterminer l'heure actuelle et le type de pointage
          $heure_actuelle = now();
-         $heure_limite = now()->setTime(9, 0);
+         $heure_limite = now()->setTime(19, 0);
 
          $type = $heure_actuelle->greaterThan($heure_limite) ? 'retard' : 'present';
 
@@ -148,34 +148,34 @@ class PointageController extends Controller
         ], 403);
      }
 
-        public function afficherPointagesAujourdHui(Request $request)
-        {
-            // Récupérer la date d'aujourd'hui
-        $dateAujourdhui = now()->toDateString();
+            public function afficherPointagesAujourdHui(Request $request)
+            {
+                // Récupérer la date d'aujourd'hui
+            $dateAujourdhui = now()->toDateString();
 
-        // Récupérer les pointages pour aujourd'hui pour tous les utilisateurs
-        $pointages = Pointage::where('date', $dateAujourdhui)
-            ->with('user') // Charger les détails de l'utilisateur en même temps
-            ->get();
+            // Récupérer les pointages pour aujourd'hui pour tous les utilisateurs
+            $pointages = Pointage::where('date', $dateAujourdhui)
+                ->with('user') // Charger les détails de l'utilisateur en même temps
+                ->get();
 
-        // Filtrer les utilisateurs pour obtenir uniquement les apprenants et formateurs
-        $usersAvecPointage = $pointages->filter(function ($pointage) {
-            return $pointage->user->hasRole(['Apprenant', 'Formateur']);
-        });
+            // Filtrer les utilisateurs pour obtenir uniquement les apprenants et formateurs
+            $usersAvecPointage = $pointages->filter(function ($pointage) {
+                return $pointage->user->hasRole(['Apprenant', 'Formateur']);
+            });
 
-        if ($usersAvecPointage->isEmpty()) {
+            if ($usersAvecPointage->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Aucun apprenant ou formateur n\'a pointé aujourd\'hui.',
+                ], 404);
+            }
+
             return response()->json([
-                'success' => false,
-                'message' => 'Aucun apprenant ou formateur n\'a pointé aujourd\'hui.',
-            ], 404);
+                'success' => true,
+                'message' => 'Pointages des apprenants et formateurs récupérés avec succès.',
+                'pointages' => $usersAvecPointage,
+            ]);
         }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Pointages des apprenants et formateurs récupérés avec succès.',
-            'pointages' => $usersAvecPointage,
-        ]);
-    }
 public function afficherPointagesPromoAujourdHui(Request $request)
 {
     // Validation des données d'entrée
@@ -372,25 +372,19 @@ public function MesPointages()
             ->get();
 
         // Vérifier si des pointages existent
-        if ($pointages->isEmpty()) {
-            return response()->json([
-               'success' => true,
-               'message' => 'Aucun pointage trouvé pour cette semaine.',
-            ], 404);
+    // Vérifier si des pointages existent
+if ($pointages->isEmpty()) {
+    return response()->json([
+       'success' => true,
+       'message' => 'Aucun pointage trouvé pour cette semaine.',
+       'pointages' => [],
+    ], 200);
+}
 
-            return response()->json([
-               'success' => false,
-               'message' => 'Vos pointages pour cette semaine ont été récupérés avec succès.',
-                'pointages' => $pointages,
-            ]);
         }
-        return response()->json([
-            'success' => true,
-            'pointages' => $pointages,
-        ]);
 
 
-    }
+
 
 //  formateur auth voir pointages de ses promos :
 
