@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Pointage;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Carbon\Carbon;
 
 class PointagesTableSeeder extends Seeder
 {
@@ -21,23 +22,23 @@ class PointagesTableSeeder extends Seeder
         foreach ($apprenants as $apprenant) {
             Pointage::create([
                 'type' => 'present', // 'present', 'absence', 'retard'
-                'date' => now()->subDays(rand(0, 30)), // Date aléatoire dans les 30 derniers jours
-                'heure_present' => now()->subHours(rand(1, 4)), // Heure d'arrivée aléatoire
-                'motif' => null, // Aucune absence
+                'date' => Carbon::now()->subDays(rand(0, 30))->format('Y-m-d'), // Date aléatoire
+                'heure_present' => Carbon::now()->subHours(rand(1, 4))->format('H:i:s'), // Heure d'arrivée aléatoire
+                'motif' => null,
                 'user_id' => $apprenant->id,
             ]);
 
             Pointage::create([
                 'type' => 'retard',
-                'date' => now()->subDays(rand(0, 30)),
-                'heure_present' => now()->subHours(rand(1, 4)),
+                'date' => Carbon::now()->subDays(rand(0, 30))->format('Y-m-d'),
+                'heure_present' => Carbon::now()->subHours(rand(1, 4))->format('H:i:s'),
                 'motif' => 'Problème de transport',
                 'user_id' => $apprenant->id,
             ]);
 
             Pointage::create([
                 'type' => 'absence',
-                'date' => now()->subDays(rand(0, 30)),
+                'date' => Carbon::now()->subDays(rand(0, 30))->format('Y-m-d'),
                 'heure_present' => null,
                 'motif' => 'Maladie',
                 'user_id' => $apprenant->id,
@@ -48,15 +49,15 @@ class PointagesTableSeeder extends Seeder
         foreach ($formateurs as $formateur) {
             Pointage::create([
                 'type' => 'present',
-                'date' => now()->subDays(rand(0, 30)),
-                'heure_present' => now()->subHours(rand(1, 4)),
+                'date' => Carbon::now()->subDays(rand(0, 30))->format('Y-m-d'),
+                'heure_present' => Carbon::now()->subHours(rand(1, 4))->format('H:i:s'),
                 'motif' => null,
                 'user_id' => $formateur->id,
             ]);
 
             Pointage::create([
                 'type' => 'absence',
-                'date' => now()->subDays(rand(0, 30)),
+                'date' => Carbon::now()->subDays(rand(0, 30))->format('Y-m-d'),
                 'heure_present' => null,
                 'motif' => 'Réunion externe',
                 'user_id' => $formateur->id,

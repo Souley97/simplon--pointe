@@ -18,7 +18,7 @@ class UsersTableSeeder extends Seeder
         Role::firstOrCreate(['name' => 'Formateur']);
         Role::firstOrCreate(['name' => 'Vigile']);
         Role::firstOrCreate(['name' => 'Administrateur']);
-        Role::firstOrCreate(['name' => 'Chef de projet']);
+        Role::firstOrCreate(['name' => 'ChefDeProjet']);
 
         // Créer un Formateur
         $formateur = User::create([
@@ -27,7 +27,7 @@ class UsersTableSeeder extends Seeder
             'matricule' => 'formateur01',
             'telephone' => '7766554433',
             'adresse' => 'Dakar',
-            'email' => 'sbk@dimplon.com',
+            'email' => 'sbk@simplon.com',
             'password' => bcrypt('password'),
             'statut' => true,
             'sexe' => 'homme',
@@ -49,7 +49,7 @@ class UsersTableSeeder extends Seeder
             'matricule' => 'formateur02',
             'telephone' => '7744332211',
             'adresse' => 'Dakar',
-            'email' => 'cs@dimplon.com',
+            'email' => 'cs@simplon.com',
             'password' => bcrypt('password'),
             'statut' => true,
             'sexe' => 'homme',
@@ -74,7 +74,7 @@ class UsersTableSeeder extends Seeder
             'matricule' => 'vigile01',
             'telephone' => '7788990011',
             'adresse' => 'Rufisque',
-            'email' => 'adama.sarr@simplon.com',
+            'email' => 'vigile@simplon.com',
             'password' => bcrypt('password'),
             'statut' => true,
             'sexe' => 'homme',
@@ -89,8 +89,8 @@ class UsersTableSeeder extends Seeder
             'matricule' => 'admin01',
             'telephone' => '7700112233',
             'adresse' => 'Saint-Louis',
-            'email' => 'fatou.ndiaye@simplon.com',
-            'password' => bcrypt('adminpassword'),
+            'email' => 'admin@simplon.com',
+            'password' => bcrypt('password'),
             'statut' => true,
             'sexe' => 'femme',
             'photo_profile' => 'admin.jpg',
@@ -104,16 +104,35 @@ class UsersTableSeeder extends Seeder
             'matricule' => 'chefprojet01',
             'telephone' => '7711223344',
             'adresse' => 'Thiès',
-            'email' => 'ibrahima.fall@simplon.com',
+            'email' => 'cf@simplon.com',
             'password' => bcrypt('password'),
             'statut' => true,
             'sexe' => 'homme',
             'photo_profile' => 'chefprojet.jpg',
         ]);
-        $chefDeProjet->assignRole('Chef de projet');
+        $chefDeProjet->assignRole('ChefDeProjet');
 
         // Assigner le Chef de projet à une promotion
-        $promo2 = Promo::find(2); // Associer à une autre promo existante
+        $promo = Promo::find(2); // Associer à une autre promo existante
         $chefDeProjet->promos()->attach($promo2);
+
+            // Créer un Chef de projet
+            $chefDeProjet = User::create([
+                'nom' => 'Fall',
+                'prenom' => 'Ibrahima',
+                'matricule' => 'chefprojet02',
+                'telephone' => '77223344',
+                'adresse' => 'Thiès',
+                'email' => 'chef@simplon.com',
+                'password' => bcrypt('password'),
+                'statut' => true,
+                'sexe' => 'homme',
+                'photo_profile' => 'chefprojet.jpg',
+            ]);
+            $chefDeProjet->assignRole('ChefDeProjet');
+
+            // Assigner le Chef de projet à une promotion
+            $promo3 = Promo::find(3); // Associer à une autre promo existante
+            $chefDeProjet->promos()->attach($promo2);
     }
 }

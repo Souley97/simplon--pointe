@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
+use App\Models\Promo;
 use App\Http\Requests\StorePromoRequest;
 use App\Http\Requests\UpdatePromoRequest;
-use App\Models\Promo;
 
 class PromoController extends Controller
 {
@@ -26,16 +27,17 @@ class PromoController extends Controller
         // Récupérer l'utilisateur connecté
         $user = auth()->user();
 
-        // Vérifier si l'utilisateur est un formateur ou un chef de projet
-        if (!$user->hasRole(['Formateur', 'Chef de projet'])) {
+        // Vérifier si l'utilisateur est un formateur ou un ChefDeProjet
+        if (!$user->hasRole(['Formateur', 'ChefDeProjet'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Vous n\'êtes pas autorisé à accéder à cette section.',
             ], 403);
         }
 
-        // Récupérer les promotions si l'utilisateur est formateur ou chef de projet
-        $promos = Promo::where('formateur_id', $user->id)
+        // Récupérer les promotions en fonction du rôle de l'utilisateur
+        $promos = Promo::with('formateur') // Inclure la relation avec le formateur
+            ->where('formateur_id', $user->id)
             ->orWhere('chef_projet_id', $user->id)
             ->get();
 
@@ -55,19 +57,20 @@ class PromoController extends Controller
         ]);
     }
 
+
     public function mesPromosTermine(){
         // Récupérer l'utilisateur connecté
         $user = auth()->user();
 
-        // Vérifier si l'utilisateur est un formateur ou un chef de projet
-        if (!$user->hasRole(['Formateur', 'Chef de projet'])) {
+        // Vérifier si l'utilisateur est un formateur ou un ChefDeProjet
+        if (!$user->hasRole(['Formateur', 'ChefDeProjet'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Vous n\'êtes pas autorisé à accéder à cette section.',
             ], 403);
         }
 
-        // Récupérer les promotions terminées si l'utilisateur est formateur ou chef de projet
+        // Récupérer les promotions terminées si l'utilisateur est formateur ou ChefDeProjet
         $promos = Promo::where('statut', 'termine')
             ->where('formateur_id', $user->id)
             ->orWhere('chef_projet_id', $user->id)
@@ -90,39 +93,39 @@ class PromoController extends Controller
     }
 
 
-    public function mesPromosEncours(){
-        // Récupérer l'utilisateur connecté
+    public function mesPromosEncours() {
         $user = auth()->user();
 
-        // Vérifier si l'utilisateur est un formateur ou un chef de projet
-        if (!$user->hasRole(['Formateur', 'Chef de projet'])) {
+        if (!$user->hasRole(['Formateur', 'ChefDeProjet'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Vous n\'êtes pas autorisé à accéder à cette section.',
             ], 403);
         }
 
-        // Récupérer les promotions terminées si l'utilisateur est formateur ou chef de projet
+        // Récupérer les promotions en cours pour l'utilisateur
         $promos = Promo::where('statut', 'encours')
-            ->where('formateur_id', $user->id)
-            ->orWhere('chef_projet_id', $user->id)
+            ->where(function($query) use ($user) {
+                $query->where('formateur_id', $user->id)
+                      ->orWhere('chef_projet_id', $user->id);
+            })
             ->get();
 
-        // Vérifier si des promos existent pour l'utilisateur
-        if ($promos->isEmpty()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Aucune promotion n\'est assignée à vous.',
-            ], 404);
+        // Mettre à jour le statut des promotions si la date de fin est passée
+        foreach ($promos as $promo) {
+            if (Carbon::parse($promo->date_fin)->lt(Carbon::now())) {
+                $promo->statut = 'termine';
+                $promo->save();
+            }
         }
-        // Retourner la liste des promotions sous forme de JSON
+
         return response()->json([
             'success' => true,
-            'message' => 'Promotions récupérées avec succès.',
+            'message' => 'Promotions en cours récupérées avec succès.',
             'promos' => $promos,
         ]);
-
     }
+
 
 
 

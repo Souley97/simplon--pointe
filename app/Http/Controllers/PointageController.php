@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Promo;
 use App\Models\Pointage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePointageRequest;
 use App\Http\Requests\UpdatePointageRequest;
@@ -35,26 +36,26 @@ class PointageController extends Controller
          $user = User::where('matricule', $request->matricule)->firstOrFail();
 
          // Pour les formateurs : gérer l'heure de départ
-         if ($user->hasRole('Formateur')) {
-             // Rechercher un pointage d'arrivée déjà effectué pour la journée
-             $pointageArrivee = Pointage::where('user_id', $user->id)
-                             ->where('date', now()->toDateString())
-                             ->whereNull('heur_depart') // Chercher uniquement les pointages sans départ
-                             ->first();
+        //  if ($user->hasRole('Formateur')) {
+        //      // Rechercher un pointage d'arrivée déjà effectué pour la journée
+        //      $pointageArrivee = Pointage::where('user_id', $user->id)
+        //                      ->where('date', now()->toDateString())
+        //                      ->whereNull('heur_depart') // Chercher uniquement les pointages sans départ
+        //                      ->first();
 
-             if ($pointageArrivee) {
-                 // Enregistrer l'heure de départ
-                 $pointageArrivee->update([
-                     'heur_depart' => now()->format('H:i:s'),
-                 ]);
+        //      if ($pointageArrivee) {
+        //          // Enregistrer l'heure de départ
+        //          $pointageArrivee->update([
+        //              'heur_depart' => now()->format('H:i:s'),
+        //          ]);
 
-                 return response()->json([
-                     'success' => true,
-                     'message' => 'Heure de départ enregistrée avec succès pour le formateur.',
-                     'pointage' => $pointageArrivee,
-                 ]);
-             }
-         }
+        //          return response()->json([
+        //              'success' => true,
+        //              'message' => 'Heure de départ enregistrée avec succès pour le formateur.',
+        //              'pointage' => $pointageArrivee,
+        //          ]);
+        //      }
+        //  }
 
          // Vérifier s'il y a déjà un pointage d'arrivée pour la journée
          $pointage = Pointage::where('user_id', $user->id)
@@ -82,6 +83,7 @@ class PointageController extends Controller
              'date' => now()->toDateString(),
              'heure_present' => $heure_actuelle->format('H:i:s'),
          ]);
+        //  return $this->customJsonResponse('Pointage d\'arrivée enregistré avec succès', $pointage, 'user' ,$user,);
 
          return response()->json([
              'success' => true,
@@ -219,7 +221,7 @@ public function afficherPointagesPromoAujourdHui(Request $request)
     }
 
     // Récupérer la date d'aujourd'hui
-    $dateAujourdhui = now()->toDateString();
+    $date = $request->input('date');
 
     // Récupérer l'ID de la promotion depuis la requête
     $promotionId = $request->input('promo_id');
@@ -235,7 +237,7 @@ public function afficherPointagesPromoAujourdHui(Request $request)
 
     // Récupérer les pointages des utilisateurs pour aujourd'hui
     $pointages = Pointage::whereIn('user_id', $users)
-        ->where('date', $dateAujourdhui)
+        ->where('date', $date)
         ->with('user') // Charger les informations de l'utilisateur en même temps
         ->get();
 
@@ -252,66 +254,128 @@ public function afficherPointagesPromoAujourdHui(Request $request)
         'message' => 'Pointages des apprenants et formateurs récupérés avec succès.',
         'pointages' => $pointages,
     ]);
-}
-
-
-public function afficherPointagesPromo(Request $request)
+}public function MesPointagesdesmonPromo(Request $request, $promoId)
 {
-    // Validation des données d'entrée
-    $validator = validator($request->all(), [
-        'promo_id' => ['required', 'exists:promos,id'], // Vérifie que la promo existe
-    ]);
+  $user = auth()->user(); // Récupérer l'utilisateur connecté
+    $promoId = $request->input('promo_id');
+    $date = $request->input('date');
+    $mois = $request->input('mois');
+    $annee = $request->input('annee');
+    $semaine = $request->input('semaine');
 
-    if ($validator->fails()) {
+    // Vérification des paramètres requis
+    if (!$mois || !$annee) {
         return response()->json([
             'success' => false,
-            'errors' => $validator->errors(),
-        ], 422);
+            'message' => 'Les paramètres mois et année sont requis.',
+        ], 400);
     }
 
-    // Récupérer l'ID de la promotion depuis la requête
-    $promotionId = $request->input('promo_id');
+    // Vérifiez si l'utilisateur a accès à la promotion
+    $hasAccess = $user->promos()->where('promos.id', $promoId)->exists();
 
-    // Récupérer la promotion avec sa date de début
-    $promotion = Promo::find($promotionId);
-
-    // Si la promotion n'est pas trouvée (par sécurité)
-    if (!$promotion) {
+    if (!$hasAccess) {
         return response()->json([
             'success' => false,
-            'message' => 'La promotion n\'existe pas.',
-        ], 404);
+            'message' => 'Vous n\'avez pas accès à cette promotion.',
+        ], 403);
     }
 
-    // Récupérer les utilisateurs (apprenants et formateurs) qui appartiennent à la promotion
-    $users = User::whereHas('promos', function($query) use ($promotionId) {
-        $query->where('promos.id', $promotionId);
-    })
-    ->whereHas('roles', function($query) {
-        $query->whereIn('name', ['Apprenant', 'Formateur']);
-    })
-    ->pluck('id'); // Récupérer uniquement les IDs des utilisateurs
 
-    // Récupérer les pointages depuis la date de début de la promotion jusqu'à aujourd'hui
-    $pointages = Pointage::whereIn('user_id', $users)
-        ->whereBetween('date', [$promotion->date_debut, now()->toDateString()]) // Filtrer entre la date de début et aujourd'hui
-        ->with('user') // Charger les informations de l'utilisateur
+    // Calculer les dates de début et de fin
+    if ($semaine) {
+        $date_debut = Carbon::now()->setISODate($annee, $semaine)->startOfWeek();
+        $date_fin = Carbon::now()->setISODate($annee, $semaine)->endOfWeek();
+    } elseif ($date) {
+        $date_debut = Carbon::parse($date)->startOfDay();
+        $date_fin = Carbon::parse($date)->endOfDay();
+    } else {
+        $date_debut = Carbon::createFromDate($annee, $mois, 1)->startOfMonth();
+        $date_fin = Carbon::createFromDate($annee, $mois, 1)->endOfMonth();
+    }
+
+    // Récupérer les pointages pour la période sélectionnée
+    $pointages = Pointage::where('user_id', $user->id)
+        ->where('promo_id', $promoId)
+        ->whereBetween('date', [$date_debut, $date_fin])
         ->get();
 
-    // Vérifier si des pointages ont été trouvés
+    // Vérification des résultats
     if ($pointages->isEmpty()) {
         return response()->json([
-            'success' => false,
-            'message' => 'Aucun pointage trouvé pour cette promotion depuis sa date de début.',
-        ], 404);
+            'success' => true,
+            'message' => 'Aucun pointage trouvé pour cette période.',
+            'pointages' => [],
+        ], 200);
     }
 
     return response()->json([
         'success' => true,
-        'message' => 'Pointages des apprenants et formateurs récupérés avec succès.',
+        'message' => 'Pointages récupérés avec succès.',
         'pointages' => $pointages,
     ]);
 }
+
+
+
+
+// public function afficherPointagesPromo(Request $request)
+//     {
+//         // Récupérer l'ID de la promotion depuis les paramètres de la requête GET
+//         $promotionId = $request->query('promo_id');
+
+//         // Validation des données d'entrée
+//         $validator = validator(['promo_id' => $promotionId], [
+//             'promo_id' => ['required', 'exists:promos,id'], // Vérifie que la promo existe
+//         ]);
+
+//         if ($validator->fails()) {
+//             return response()->json([
+//                 'success' => false,
+//                 'errors' => $validator->errors(),
+//             ], 422);
+//         }
+
+//         // Récupérer la promotion avec sa date de début
+//         $promotion = Promo::find($promotionId);
+
+//         // Si la promotion n'est pas trouvée (par sécurité)
+//         if (!$promotion) {
+//             return response()->json([
+//                 'success' => false,
+//                 'message' => 'La promotion n\'existe pas.',
+//             ], 404);
+//         }
+
+//         // Récupérer les utilisateurs (apprenants et formateurs) qui appartiennent à la promotion
+//         $users = User::whereHas('promos', function ($query) use ($promotionId) {
+//             $query->where('promos.id', $promotionId);
+//         })
+//         ->whereHas('roles', function ($query) {
+//             $query->whereIn('name', ['Apprenant', 'Formateur']);
+//         })
+//         ->pluck('id'); // Récupérer uniquement les IDs des utilisateurs
+
+//         // Récupérer les pointages depuis la date de début de la promotion jusqu'à aujourd'hui
+//         $pointages = Pointage::whereIn('user_id', $users)
+//             ->whereBetween('date', [$promotion->date_debut, now()->toDateString()]) // Filtrer entre la date de début et aujourd'hui
+//             ->with('user') // Charger les informations de l'utilisateur
+//             ->get();
+
+//         // Vérifier si des pointages ont été trouvés
+//         if ($pointages->isEmpty()) {
+//             return response()->json([
+//                 'success' => false,
+//                 'message' => 'Aucun pointage trouvé pour cette promotion depuis sa date de début.',
+//             ], 404);
+//         }
+
+//         return response()->json([
+//             'success' => true,
+//             'message' => 'Pointages des apprenants et formateurs récupérés avec succès.',
+//             'pointages' => $pointages,
+//         ]);
+//     }
 
 public function MesPointages()
 {
@@ -355,17 +419,45 @@ public function MesPointages()
 }
 
 // pointageAujourdhui
+    // public function pointageAujourdhui()
+    // {
+    //     // Récupérer l'utilisateur connecté
+    //     $user = auth()->user();
+
+    //     // Récupérer la date d'aujourd'hui
+    //     $dateAujourdhui = now()->toDateString();
+
+    //     // Récupérer les pointages de l'utilisateur connecté pour aujourd'hui
+    //     $pointages = Pointage::where('user_id', $user->id)
+    //         ->where('date', $dateAujourdhui)
+    //         ->get();
+
+    //     // Vérifier si des pointages existent
+    //     if ($pointages->isEmpty()) {
+    //         return response()->json([
+    //            'success' => false,
+    //            'message' => 'Aucun pointage trouvé pour aujourd\'hui.',
+    //         ], 404);
+    //     }
+    //     return response()->json([
+    //         'success' => true,
+    //        'message' => 'Votre pointage pour aujourd\'hui a été récupéré avec succès.',
+    //         'pointages' => $pointages,
+    //     ]);
+
+    // }
     public function pointageAujourdhui()
     {
         // Récupérer l'utilisateur connecté
         $user = auth()->user();
+        $date = $request->input('date');
 
         // Récupérer la date d'aujourd'hui
-        $dateAujourdhui = now()->toDateString();
+        // $date = now()->toDateString();
 
         // Récupérer les pointages de l'utilisateur connecté pour aujourd'hui
         $pointages = Pointage::where('user_id', $user->id)
-            ->where('date', $dateAujourdhui)
+            ->where('date', $date)
             ->get();
 
         // Vérifier si des pointages existent

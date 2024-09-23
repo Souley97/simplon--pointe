@@ -18,7 +18,7 @@ class PromosTableSeeder extends Seeder
         // Récupérer quelques fabriques, formateurs, chefs de projet et formations
         $fabriques = Fabrique::all();
         $formateurs = User::role('Formateur')->get();
-        $chefsDeProjet = User::role('Chef de projet')->get();
+        $chefsDeProjet = User::role('ChefDeProjet')->get();
         $formations = Formation::all();
 
         // Crée plusieurs promotions

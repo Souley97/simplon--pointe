@@ -26,7 +26,7 @@ class StorePromoRequest extends FormRequest
 
      'nom' => 'required|string|max:25|min:2',
         'date_debut' => 'required|date|after_or_equal:today',
-        'date_fin' => 'required|date|after_or_equal:date_debut',
+        'date_fin' => 'required|date|after:date_debut',
         'fabrique_id' => 'required|exists:fabriques,id',
         'chef_projet_id' => 'required|exists:users,id',
         'formation_id' => 'required|exists:formations,id',

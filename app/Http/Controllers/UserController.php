@@ -55,4 +55,11 @@ class UserController extends Controller
             'user' => $user
         ], 200);
     }
+    public function chefsProjet()
+{
+    $chefs = User::whereHas('roles', function($query) {
+        $query->where('name', 'ChefDeProjet');
+    })->get(); // Récupère tous les utilisateurs ayant le rôle de Chef de Projet
+    return response()->json($chefs);
+}
 }
