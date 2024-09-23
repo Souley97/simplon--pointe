@@ -11,12 +11,14 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 
-function jsonResponse($e, $status, $defaultMessage)
-{
-    return response()->json(
-        ['error' => app()->environment('local') ? $e->getMessage() : $defaultMessage],
-        $status
-    );
+if (!function_exists('jsonResponse')) {
+    function jsonResponse($e, $status, $defaultMessage)
+    {
+        return response()->json(
+            ['error' => app()->environment('local') ? $e->getMessage() : $defaultMessage],
+            $status
+        );
+    }
 }
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -36,6 +38,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             env('APP_URL') . '/raesearchjspost'
         ]);
+
         //
     })
     ->withExceptions(function (Exceptions $exceptions) {

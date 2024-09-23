@@ -47,4 +47,5 @@ class Promo extends Model
     {
         return $this->belongsToMany(User::class, 'apprenant_promo');
     }
+    
 }

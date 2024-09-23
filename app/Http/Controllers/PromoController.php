@@ -34,8 +34,9 @@ class PromoController extends Controller
             ], 403);
         }
 
-        // Récupérer les promotions si l'utilisateur est formateur ou chef de projet
-        $promos = Promo::where('formateur_id', $user->id)
+        // Récupérer les promotions en fonction du rôle de l'utilisateur
+        $promos = Promo::with('formateur') // Inclure la relation avec le formateur
+            ->where('formateur_id', $user->id)
             ->orWhere('chef_projet_id', $user->id)
             ->get();
 
@@ -54,6 +55,7 @@ class PromoController extends Controller
             'promos' => $promos,
         ]);
     }
+
 
     public function mesPromosTermine(){
         // Récupérer l'utilisateur connecté

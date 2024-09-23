@@ -11,18 +11,94 @@ use Spatie\Permission\Models\Role;
 // Xlsx
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
 use App\Notifications\ApprenantInscriptionNotification;
 use PhpOffice\PhpSpreadsheet\Reader\Exception as SpreadsheetException;
-use App\Mail\ApprenantInscritMail;
 
-class ApprenantController extends Controller
+class FormateurController extends Controller
 {
+    public function afficherPointagesPromo(Request $request)
+    {
+        $user = auth()->user();
+        $mois = $request->input('mois');
+        $annee = $request->input('annee');
+        $date = "2024-09-10"; // Récupère une date spécifique si elle est fournie
 
+        $semaine = $request->input('semaine'); // Nouvelle entrée pour la semaine
+        if (!$mois || !$annee) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Les paramètres mois et année sont requis.',
+            ], 400);
+        }
+        // Récupérer l'ID de la promotion depuis les paramètres de la requête GET
+        $promotionId = $request->query('promo_id');
+// Si un numéro de semaine est fourni, calculer les dates de début et de fin de la semaine
+if ($semaine) {
+    $date_debut = Carbon::now()->setISODate($annee, $semaine)->startOfWeek();
+    $date_fin = Carbon::now()->setISODate($annee, $semaine)->endOfWeek();
+} else {
+    // Si aucune semaine n'est fournie, utiliser le mois et l'année pour récupérer les dates de début et de fin du mois
+    $date_debut = Carbon::createFromDate($annee, $mois, 1)->startOfMonth();
+    $date_fin = Carbon::createFromDate($annee, $mois, 1)->endOfMonth();
+}
+
+        // Validation des données d'entrée
+        $validator = validator(['promo_id' => $promotionId], [
+            'promo_id' => ['required', 'exists:promos,id'], // Vérifie que la promo existe
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        // Récupérer la promotion avec sa date de début
+        $promotion = Promo::find($promotionId);
+
+        // Si la promotion n'est pas trouvée (par sécurité)
+        if (!$promotion) {
+            return response()->json([
+                'success' => false,
+                'message' => 'La promotion n\'existe pas.',
+            ], 404);
+        }
+
+        // Récupérer les utilisateurs (apprenants et formateurs) qui appartiennent à la promotion
+        $users = User::whereHas('promos', function ($query) use ($promotionId) {
+            $query->where('promos.id', $promotionId);
+        })
+        ->whereHas('roles', function ($query) {
+            $query->whereIn('name', ['Apprenant', 'Formateur']);
+        })
+        ->pluck('id'); // Récupérer uniquement les IDs des utilisateurs
+
+        // Récupérer les pointages depuis la date de début de la promotion jusqu'à aujourd'hui
+        $pointages = Pointage::whereIn('user_id', $users)
+            ->whereBetween('date', [$promotion->date_debut, now()->toDateString()]) // Filtrer entre la date de début et aujourd'hui
+            ->with('user') // Charger les informations de l'utilisateur
+            ->get();
+
+        // Vérifier si des pointages ont été trouvés
+        if ($pointages->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Aucun pointage trouvé pour cette promotion depuis sa date de début.',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pointages des apprenants et formateurs récupérés avec succès.',
+            'pointages' => $pointages,
+        ]);
+    }
     public function inscrireApprenant(Request $request)
     {
+
         // Validation des données
         $validator = validator($request->all(), [
             'nom' => ['required', 'string', 'max:255'],
@@ -71,7 +147,6 @@ class ApprenantController extends Controller
 
             // Envoi de la notification par email
             $user->notify(new ApprenantInscriptionNotification($user, $password));
-            // Mail::to($user->email)->send(new ApprenantInscritMail($user, $password));
 
             return response()->json([
                 'success' => true,
@@ -179,6 +254,7 @@ class ApprenantController extends Controller
             ], 500);
         }
     }
+    // 
 
    // MesPointages apprenant connecté avec option de filtrage par mois ou par semaine
 public function MesPointages(Request $request)
