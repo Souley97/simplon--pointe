@@ -63,6 +63,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/update/information', [UserController::class, 'updateInformation']);
     });
     // Route::middleware('auth:api')->group(function () {
+    // });
 
     Route::post('/pointage/arrivee', [PointageController::class, 'pointageArrivee']);
     Route::post('/pointage/depart', [PointageController::class, 'pointageDepart']);
@@ -127,7 +128,6 @@ Route::get('/user/role', function (Request $request) {
         return response()->json(['role' => 'Apprenant']);
     } elseif ($user->hasRole('Vigile')) {
         return response()->json(['role' => 'Vigile']);
-    } elseif ($user->hasRole('ChefDeProjet')) {
         return response()->json(['role' => 'ChefDeProjet']);
     } elseif ($user->hasRole('Administrateur')) {
         return response()->json(['role' => 'Administrateur']);
