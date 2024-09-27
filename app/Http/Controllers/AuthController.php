@@ -159,7 +159,7 @@ class AuthController extends Controller
         $user->save();
 
         // Vérifier si le rôle d'apprenant existe, sinon le créer
-        $role = Role::firstOrCreate(['name' => 'Chef de projet']);
+        $role = Role::firstOrCreate(['name' => 'ChefDeProjet']);
         $user->assignRole($role);
 
         // // Assigner à une promotion si l'ID de promotion est fourni

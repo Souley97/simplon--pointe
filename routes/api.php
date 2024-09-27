@@ -14,19 +14,6 @@ use App\Http\Controllers\FormationController;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ApprenantInscritMail;
 
-Route::get('/test-email', function () {
-    $user = new \stdClass();
-    $user->nom = 'Ndiaye';
-    $user->prenom = 'Souleymane';
-    $user->email = 'souleymane9700@gmail.com';
-
-    $password = 'MotDePasseTest123'; // Mot de passe généré pour le test
-
-    // Envoyer l'e-mail
-    Mail::to($user->email)->send(new ApprenantInscritMail($user, $password));
-
-    return 'E-mail envoyé avec succès à souleymane9700@gmail.com !';
-});
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
@@ -46,7 +33,6 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/formateur/inscrire', [AuthController::class, 'inscrireFormateur']);
     Route::post('/chef-de-projet/inscrire', [AuthController::class, 'inscrireChefDeProjet']);
     Route::post('/vigile/inscrire', [AuthController::class, 'inscrireVigile']);
-    Route::get('/pointages/semaines', [PointageController::class, 'pointageParSemaine'])->name('pointage/semaine');
 
 
     Route::get('/promos/formateur', [PromoController::class, 'mesPromos']);
@@ -76,10 +62,13 @@ Route::middleware('auth:api')->group(function () {
     // Route::get('/pointages/promo', [PointageController::class, 'afficherPointagesPromo']);
     Route::get('/pointages/moi', [PointageController::class, 'MesPointages'])->name('pointage/moi');
     Route::get('/pointages/aujourdhui', [PointageController::class, 'afficherPointagesAujourdHui'])->name('pointage/user');
+    // pointagePar semaine
+    Route::get('/pointages/semaines', [PointageController::class, 'pointageParSemaine'])->name('pointage/semaine');
+    Route::get('/promo/{promo_id}/pointages-semaine', [PointageController::class, 'pointageParSemaineUnPromo']);
 
 
 
-// Mise à jour d'une promotion par un formateur
+
 Route::post('/promos/{promo}', [PromoController::class, 'update'])->middleware('auth:api');
 Route::get('/promos/{promo}', [PromoController::class, 'show']);
 
@@ -89,7 +78,11 @@ Route::get('/promos/{promo}/pointages-aujourdhui', [PointageController::class, '
 // MesPointagesdesmonPromo
 Route::get('/promos/{promo}/pointages-mon-promo', [PromoController::class, 'mesPointagesPromo'])->middleware('auth:api');
 // Mes pointages (utilisateur connecté)
-Route::get('/mes-pointages', [PromoController::class, 'mesPointages'])->middleware('auth:api');
+Route   ::get('/mes-pointages', [PromoController::class, 'mesPointages'])->middleware('auth:api');
+
+// promo encours
+Route::get('/admin/promos/encours', [PromoController::class, 'promosEncours'])->middleware('auth:api');
+Route::get('/admin/promos/terminees', [PromoController::class, 'promosTerminees'])->middleware('auth:api');
 // mes promo termier
 
 
@@ -116,6 +109,11 @@ Route::get('/chefs-projet', [UserController::class, 'chefsProjet']);
 
 Route::middleware('auth:api')->group(function () {
 
+// formateur
+Route::get('/formateurs', [FormateurController::class, 'ListeFormateurs']);
+Route::get('formateurs/promotions', [FormateurController::class, 'getPromotions']);
+
+// Route::post('/formateurs', [FormateurController::class, 'store']);
 
 
 // routes/api.php
@@ -128,6 +126,7 @@ Route::get('/user/role', function (Request $request) {
         return response()->json(['role' => 'Apprenant']);
     } elseif ($user->hasRole('Vigile')) {
         return response()->json(['role' => 'Vigile']);
+    } elseif ($user->hasRole('ChefDeProjet')) {
         return response()->json(['role' => 'ChefDeProjet']);
     } elseif ($user->hasRole('Administrateur')) {
         return response()->json(['role' => 'Administrateur']);

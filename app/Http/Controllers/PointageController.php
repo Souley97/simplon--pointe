@@ -477,31 +477,109 @@ public function MesPointages()
     // pointageParSemaine
     public function pointageParSemaine()
     {
-        // Récupérer l'utilisateur connecté
-        $user = auth()->user();
+       $validator = validator($request->all(), [
+        'promo_id' => ['required', 'exists:promos,id'], // Vérifie que la promo existe
+    ]);
 
-        // Récupérer la date d'aujourd'hui
-        $dateAujourdhui = now()->toDateString();
+    if ($validator->fails()) {
+        return response()->json([
+            'success' => false,
+            'errors' => $validator->errors(),
+        ], 422);
+    }
 
-        // Récupérer le premier jour de la semaine pour la date d'aujourd'hui
-        $premierJourSemaine = now()->startOfWeek()->toDateString();
+    // Récupérer la date d'aujourd'hui
+    $date = $request->input('date');
 
-        // Récupérer les pointages de l'utilisateur connecté pour la semaine
-        $pointages = Pointage::where('user_id', $user->id)
-            ->whereBetween('date', [$premierJourSemaine, $dateAujourdhui])
-            ->get();
+    // Récupérer l'ID de la promotion depuis la requête
+    $promotionId = $request->input('promo_id');
 
-        // Vérifier si des pointages existent
-    // Vérifier si des pointages existent
-if ($pointages->isEmpty()) {
+    // Récupérer les utilisateurs (apprenants et formateurs) qui appartiennent à la promotion
+    $users = User::whereHas('promos', function($query) use ($promotionId) {
+        $query->where('promos.id', $promotionId);
+    })
+    ->whereHas('roles', function($query) {
+        $query->whereIn('name', ['Apprenant', 'Formateur']);
+    })
+    ->pluck('id'); // Récupère uniquement les IDs des utilisateurs
+
+    // Récupérer les pointages des utilisateurs pour aujourd'hui
+    $pointages = Pointage::whereIn('user_id', $users)
+        ->where('date', $date)
+        ->with('user') // Charger les informations de l'utilisateur en même temps
+        ->get();
+
+    // Vérifier si des pointages ont été trouvés
+    if ($pointages->isEmpty()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Aucun apprenant ou formateur n\'a pointé aujourd\'hui dans cette promotion.',
+        ], 404);
+    }
+
     return response()->json([
-       'success' => true,
-       'message' => 'Aucun pointage trouvé pour cette semaine.',
-       'pointages' => [],
-    ], 200);
+        'success' => true,
+        'message' => 'Pointages des apprenants et formateurs récupérés avec succès.',
+        'pointages' => $pointages,
+    ]);
+}
+public function pointageParSemaineUnPromo(Request $request, $promo_id)
+{
+    // Récupérer les dates de début et de fin de la semaine passée en paramètre
+    $startOfWeek = Carbon::parse($request->input('start_date'))->startOfWeek();
+    $endOfWeek = Carbon::parse($request->input('end_date'))->endOfWeek();
+
+    // Récupérer les pointages pour la promotion donnée pendant la période spécifiée
+    $pointages = Pointage::whereHas('apprenantPromo', function ($query) use ($promo_id) {
+            $query->where('promo_id', $promo_id);
+        })
+        ->whereBetween('date', [$startOfWeek, $endOfWeek])
+        ->get();
+
+    // Compter les différents types de pointages (présent, retard, absence)
+    $presences = $pointages->where('type', 'present')->count();
+    $retards = $pointages->where('type', 'retard')->count();
+    $absences = $pointages->where('type', 'absence')->count();
+
+    // Retourner les résultats sous forme de tableau ou de réponse JSON
+    return response()->json([
+        'presences' => $presences,
+        'retards' => $retards,
+        'absences' => $absences,
+        'total_pointages' => $pointages->count(),
+        'start_of_week' => $startOfWeek->toDateString(),
+        'end_of_week' => $endOfWeek->toDateString(),
+    ]);
 }
 
-        }
+
+    //     public function pointageParSemaine()
+    //     {
+    //         // Récupérer l'utilisateur connecté
+    //         $user = auth()->user();
+
+    //         // Récupérer la date d'aujourd'hui
+    //         $dateAujourdhui = now()->toDateString();
+
+    //         // Récupérer le premier jour de la semaine pour la date d'aujourd'hui
+    //         $premierJourSemaine = now()->startOfWeek()->toDateString();
+
+    //         // Récupérer les pointages de l'utilisateur connecté pour la semaine
+    //         $pointages = Pointage::where('user_id', $user->id)
+    //             ->whereBetween('date', [$premierJourSemaine, $dateAujourdhui])
+    //             ->get();
+
+    //         // Vérifier si des pointages existent
+    //     // Vérifier si des pointages existent
+    // if ($pointages->isEmpty()) {
+    //     return response()->json([
+    //        'success' => true,
+    //        'message' => 'Aucun pointage trouvé pour cette semaine.',
+    //        'pointages' => [],
+    //     ], 200);
+    // }
+
+    //         }
 
 
 

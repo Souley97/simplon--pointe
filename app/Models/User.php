@@ -82,7 +82,16 @@ public function pointages()
     return $this->hasMany(Pointage::class);
 }
 
+public function promosForamateur()
 
+{
+    return $this->hasMany(Promo::class, 'formateur_id');  // Associe à la clé formateur_id dans la table promos
+}
+public function promosChefDeProjet()
+
+{
+    return $this->hasMany(Promo::class,'chef_projet_id');  // Associe à la clé formateur_id dans la table promos
+}
 public function justificatifs()
 {
     return $this->hasManyThrough(Justificatif::class, Pointage::class, 'user_id', 'pointage_id');
@@ -91,7 +100,7 @@ public function justificatifs()
 public function promos()
 {
     return $this->belongsToMany(Promo::class, 'apprenant_promo');
-}   
+}
 public function getJWTIdentifier()
 {
     return $this->getKey();
