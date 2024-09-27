@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\User;
 use App\Models\Justificatif;
+use App\Models\ApprenantPromo;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -24,4 +25,12 @@ class Pointage extends Model
     {
         return $this->hasMany(Justificatif::class);
     }
+    // apprenantPromo
+    public function apprenantPromo()
+    {
+        return $this->belongsTo(ApprenantPromo::class, 'user_id'); // Utilise l'identifiant correct
+    }
+
+
+
 }

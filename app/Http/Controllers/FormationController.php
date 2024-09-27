@@ -15,7 +15,8 @@ class FormationController extends Controller
      */
     public function index()
     {
-        $formations = Formation::all();
+        $formations = Formation::withCount('promos')->with('promos')->get();
+
         return response()->json($formations);
     }
 

@@ -254,7 +254,7 @@ if ($semaine) {
             ], 500);
         }
     }
-    // 
+    //
 
    // MesPointages apprenant connecté avec option de filtrage par mois ou par semaine
 public function MesPointages(Request $request)
@@ -300,6 +300,82 @@ public function MesPointages(Request $request)
         'pointages' => $pointages,
     ]);
 }
+
+//  liste des formateurs et ChefDeProjet
+public function ListeFormateurs()
+{
+    // Récupérer les formateurs avec leur rôle et leurs promos
+    $formateurs = User::whereHas('roles', function ($query) {
+        $query->whereIn('name', ['Formateur', 'ChefDeProjet']); // Récupérer uniquement les formateurs ici
+    })
+    ->with('roles') // Charger les rôles associés
+    ->withCount(['promosForamateur','promosChefDeProjet'])  // Comptabiliser le nombre de promotions associées à chaque formateur
+    ->with(['promosForamateur','promosChefDeProjet'])  // Comptabiliser le nombre de promotions associées à chaque formateur
+    ->get();
+
+    // Ajouter les rôles sous forme de chaîne de caractères à chaque formateur
+    $formateurs->each(function($formateur) {
+        $formateur->role = $formateur->roles->first()->name; // Supposer que chaque formateur n'a qu'un rôle
+    });
+
+    // Vérifier si des formateurs sont présents
+    if ($formateurs->isEmpty()) {
+        return response()->json([
+            'success' => true,
+            'message' => 'Aucun formateur trouvé.',
+        ], 404);
+    }
+
+    // Récupérer un chef de projet séparément
+    $chefDeProjet = User::whereHas('roles', function ($query) {
+        $query->where('name', 'ChefDeProjet');
+    })->with('roles')->first();
+
+    // Vérifier si un chef de projet est présent
+    if (!$chefDeProjet) {
+        return response()->json([
+            'success' => true,
+            'message' => 'Aucun chef de projet trouvé.',
+            'formateurs' => $formateurs,
+        ], 404);
+    }
+
+    // Retourner les formateurs et le chef de projet
+    return response()->json([
+        'success' => true,
+        'message' => 'Formateurs et chef de projet récupérés avec succès.',
+        'formateurs' => $formateurs,
+    ]);
+}
+public function getPromotions() {
+    // Fetch all formateurs and chefs de projet
+    $formateurs = User::whereHas('roles', function ($query) {
+        $query->whereIn('name', ['Formateur', 'ChefDeProjet']);
+    })
+    ->with('roles')
+    ->with(['promosForamateur', 'promosChefDeProjet'])
+    ->get();
+
+    $formateurs->each(function($formateur) {
+        $formateur->role = $formateur->roles->first()->name;
+    });
+
+    if ($formateurs->isEmpty()) {
+        return response()->json([
+            'success' => true,
+            'message' => 'Aucun formateur trouvé.',
+        ], 404);
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Formateurs et chefs de projet récupérés avec succès.',
+        'formateurs' => $formateurs,
+    ]);
+}
+
+
+
 
 
 

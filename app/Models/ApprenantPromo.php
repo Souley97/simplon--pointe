@@ -15,4 +15,10 @@ class ApprenantPromo extends Model
         'user_id', // Utiliser 'user_id' au lieu de 'apprenant_id'
         'promo_id',
     ];
+
+    public function pointages()
+{
+    return $this->hasMany(Pointage::class, 'apprenant_id');
+}
+    
 }

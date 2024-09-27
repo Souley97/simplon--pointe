@@ -21,6 +21,26 @@ class PromoController extends Controller
 
 
     }
+
+    public function promosEncours()
+    {
+        // liste des promos
+        $promos = Promo::where('statut', 'encours')->get();
+        // return json
+        return response()->json($promos);
+
+
+    }
+
+    public function promosTerminees()
+    {
+        // liste des promos
+        $promos = Promo::where('statut', 'termine')->get();
+        // return json
+        return response()->json($promos);
+
+
+    }
     // Mes promos formateure connecte
     public function mesPromos()
     {
