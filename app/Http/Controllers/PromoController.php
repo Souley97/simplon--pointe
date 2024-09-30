@@ -25,7 +25,7 @@ class PromoController extends Controller
     public function promosEncours()
     {
         // liste des promos
-        $promos = Promo::where('statut', 'encours')->get();
+        $promos = Promo::where('statut', 'encours')->with('fabrique')->get();
         // return json
         return response()->json($promos);
 

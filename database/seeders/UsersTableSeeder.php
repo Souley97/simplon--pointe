@@ -79,6 +79,21 @@ class UsersTableSeeder extends Seeder
             'statut' => true,
             'sexe' => 'homme',
             'photo_profile' => 'vigile.jpg',
+
+        ]);
+        $vigile->assignRole('Vigile');
+        $vigile = User::create([
+            'nom' => 'Sarr',
+            'prenom' => 'Adama',
+            'matricule' => 'vigile02',
+            'telephone' => '77889900011',
+            'adresse' => 'Rufisque',
+            'email' => 'vigile3@simplon.com',
+            'password' => bcrypt('password'),
+            'statut' => true,
+            'sexe' => 'homme',
+            'photo_profile' => 'vigile.jpg',
+
         ]);
         $vigile->assignRole('Vigile');
 

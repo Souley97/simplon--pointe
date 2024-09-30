@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\User;
+use App\Models\Promo;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ApprenantPromo extends Model
 {
@@ -20,5 +22,14 @@ class ApprenantPromo extends Model
 {
     return $this->hasMany(Pointage::class, 'apprenant_id');
 }
-    
+public function user()
+{
+    return $this->belongsTo(User::class, 'user_id');
+}
+
+// Relation avec les promotions
+public function promo()
+{
+    return $this->belongsTo(Promo::class, 'promo_id');
+}
 }

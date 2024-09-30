@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Http\Request;
+use App\Mail\ApprenantInscritMail;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
@@ -11,8 +13,7 @@ use App\Http\Controllers\PointageController;
 use App\Http\Controllers\ApprenantController;
 use App\Http\Controllers\FormateurController;
 use App\Http\Controllers\FormationController;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\ApprenantInscritMail;
+use App\Http\Controllers\JustificatifController;
 
 
 // Route::get('/user', function (Request $request) {
@@ -47,9 +48,10 @@ Route::middleware('auth:api')->group(function () {
 
 
     Route::post('/update/information', [UserController::class, 'updateInformation']);
-    });
+
     // Route::middleware('auth:api')->group(function () {
     // });
+    Route::post('/marquer-absences', [PointageController::class, 'marquerAbsences']);
 
     Route::post('/pointage/arrivee', [PointageController::class, 'pointageArrivee']);
     Route::post('/pointage/depart', [PointageController::class, 'pointageDepart']);
@@ -59,14 +61,24 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/pointages/promo/aujourhui', [PointageController::class, 'afficherPointagesPromoAujourdHui'])->name('pointage');
 
     Route::get('/pointages/promo', [FormateurController::class, 'afficherPointagesPromo']);
+    Route::get('/pointages/promos', [FormateurController::class, 'afficherPointagesPromos']);
     // Route::get('/pointages/promo', [PointageController::class, 'afficherPointagesPromo']);
     Route::get('/pointages/moi', [PointageController::class, 'MesPointages'])->name('pointage/moi');
-    Route::get('/pointages/aujourdhui', [PointageController::class, 'afficherPointagesAujourdHui'])->name('pointage/user');
+    Route::get('/promo/{promoId}/pointages-aujourd-hui', [PointageController::class, 'afficherPointagesAujourdHuiParPromo']);
     // pointagePar semaine
     Route::get('/pointages/semaines', [PointageController::class, 'pointageParSemaine'])->name('pointage/semaine');
-    Route::get('/promo/{promo_id}/pointages-semaine', [PointageController::class, 'pointageParSemaineUnPromo']);
+    Route::POST ('/promo/{promo_id}/pointages-semaine', [PointageController::class, 'pointageParSemaineUnPromo']);
+    Route::get('/pointages/aujourdhui', [PointageController::class, 'afficherPointagesAujourdHui'])->name('pointage/user');
+    Route::get('/pointages/aujourdhui/tous', [PointageController::class, 'afficherPointagesAujourdHuiTous'])->name('pointage/user');
 
 
+
+    Route::post('/justifier-absence/{absence}', [JustificatifController::class, 'justifierAbsence']);
+
+    Route::get('/justifier-absence/{pointageId}', [JustificatifController::class, 'VoirJustifierAbsence']);
+
+
+});
 
 
 Route::post('/promos/{promo}', [PromoController::class, 'update'])->middleware('auth:api');
@@ -84,7 +96,6 @@ Route   ::get('/mes-pointages', [PromoController::class, 'mesPointages'])->middl
 Route::get('/admin/promos/encours', [PromoController::class, 'promosEncours'])->middleware('auth:api');
 Route::get('/admin/promos/terminees', [PromoController::class, 'promosTerminees'])->middleware('auth:api');
 // mes promo termier
-
 
 // });
 

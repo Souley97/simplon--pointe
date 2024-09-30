@@ -96,6 +96,71 @@ if ($semaine) {
             'pointages' => $pointages,
         ]);
     }
+    public function afficherPointagesPromos(Request $request)
+    {
+        $promotionId = $request->query('promo_id');
+        $dateSelection = $request->query('date');
+
+        $validator = validator([
+            'promo_id' => $promotionId,
+            'date' => $dateSelection,
+        ], [
+            'promo_id' => ['required', 'exists:promos,id'],
+            'date' => ['required', 'date'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $promotion = Promo::find($promotionId);
+
+        if (!$promotion) {
+            return response()->json([
+                'success' => false,
+                'message' => 'La promotion n\'existe pas.',
+            ], 404);
+        }
+
+        $apprenants = User::whereHas('promos', function ($query) use ($promotionId) {
+            $query->where('promos.id', $promotionId);
+        })
+        ->whereHas('roles', function ($query) {
+            $query->whereIn('name', ['Apprenant','Formateur']);
+        })
+        ->get();
+
+        if ($apprenants->isEmpty()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Aucun apprenant trouvé pour cette promotion.',
+                'apprenants_avec_pointage' => [],
+                'apprenants_sans_pointage' => [],
+                'date' => $dateSelection,
+            ]);
+        }
+
+        $pointages = Pointage::whereIn('user_id', $apprenants->pluck('id'))
+            ->where('date', $dateSelection)
+            ->with('user')
+            ->get();
+
+        $apprenantsAvecPointages = $pointages->pluck('user_id')->unique();
+        $apprenantsSansPointages = $apprenants->whereNotIn('id', $apprenantsAvecPointages);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pointages récupérés avec succès.',
+            'apprenants_avec_pointage' => $pointages,
+            'apprenants_sans_pointage' => $apprenantsSansPointages->values(),
+            'date' => $dateSelection,
+        ]);
+    }
+
+
     public function inscrireApprenant(Request $request)
     {
 

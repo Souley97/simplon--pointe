@@ -18,6 +18,10 @@ class PointagesTableSeeder extends Seeder
         $apprenants = User::role('Apprenant')->take(30)->get(); // Récupérer 10 apprenants
         $formateurs = User::role('Formateur')->take(3)->get(); // Récupérer 3 formateurs
 
+
+
+
+
         // Création des pointages pour les apprenants
         foreach ($apprenants as $apprenant) {
             Pointage::create([
@@ -26,14 +30,33 @@ class PointagesTableSeeder extends Seeder
                 'heure_present' => Carbon::now()->subHours(rand(1, 4))->format('H:i:s'), // Heure d'arrivée aléatoire
                 'motif' => null,
                 'user_id' => $apprenant->id,
+                'created_by' =>32,
+
+
+
+            ]);
+            Pointage::create([
+                'type' => 'present', // 'present', 'absence', 'retard'
+                'date' => "2024-09-27", // Date aléatoire
+                'heure_present' => Carbon::now()->subHours(rand(1, 4))->format('H:i:s'), // Heure d'arrivée aléatoire
+                'motif' => null,
+                'user_id' => $apprenant->id,
+                'created_by' =>32,
+
+
+
             ]);
 
             Pointage::create([
                 'type' => 'retard',
-                'date' => "2024-09-25",
+                'date' => "2024-09-30",
                 'heure_present' => Carbon::now()->subHours(rand(1, 4))->format('H:i:s'),
                 'motif' => 'Problème de transport',
                 'user_id' => $apprenant->id,
+                'created_by' =>32,
+
+
+
             ]);
 
             Pointage::create([
@@ -42,6 +65,11 @@ class PointagesTableSeeder extends Seeder
                 'heure_present' => null,
                 'motif' => 'Maladie',
                 'user_id' => $apprenant->id,
+                'created_by' =>32,
+
+
+
+
             ]);
         }
 
@@ -53,14 +81,16 @@ class PointagesTableSeeder extends Seeder
                 'heure_present' => Carbon::now()->subHours(rand(1, 4))->format('H:i:s'),
                 'motif' => null,
                 'user_id' => $formateur->id,
+                'created_by' =>31,
             ]);
 
             Pointage::create([
                 'type' => 'absence',
-                'date' => "2024-09-16",
+                'date' => "2024-09-29",
                 'heure_present' => null,
                 'motif' => 'Réunion externe',
                 'user_id' => $formateur->id,
+                'created_by' =>31,
             ]);
 
             Pointage::create([
@@ -69,6 +99,7 @@ class PointagesTableSeeder extends Seeder
                 'heure_present' => null,
                 'motif' => 'Réunion externe',
                 'user_id' => $formateur->id,
+                'created_by' =>31,
             ]);
             Pointage::create([
                 'type' => 'present',
@@ -76,6 +107,7 @@ class PointagesTableSeeder extends Seeder
                 'heure_present' => null,
                 'motif' => 'Réunion externe',
                 'user_id' => $formateur->id,
+                'created_by' =>32,
             ]);
             Pointage::create([
                 'type' => 'absence',
@@ -83,6 +115,7 @@ class PointagesTableSeeder extends Seeder
                 'heure_present' => null,
                 'motif' => 'Maladie',
                 'user_id' => $formateur->id,
+                'created_by' =>32,
             ]);
             Pointage::create([
                 'type' => 'absence',
@@ -90,6 +123,7 @@ class PointagesTableSeeder extends Seeder
                 'heure_present' => null,
                 'motif' => 'Réunion externe',
                 'user_id' => $formateur->id,
+                'created_by' =>32,
             ]);
         }
     }

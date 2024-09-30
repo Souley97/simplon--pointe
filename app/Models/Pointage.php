@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\User;
+use App\Models\Promo;
 use App\Models\Justificatif;
 use App\Models\ApprenantPromo;
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +13,7 @@ class Pointage extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'user_id', 'type', 'motif', 'date', 'heure_present', 'heure_depart'
+        'user_id', 'type', 'motif', 'date', 'heure_present', 'heure_depart', 'created_by'
 
     ];
 
@@ -20,6 +21,11 @@ class Pointage extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function promo()
+{
+    return $this->belongsTo(Promo::class);
+}
+
 
     public function justificatifs()
     {
@@ -30,6 +36,13 @@ class Pointage extends Model
     {
         return $this->belongsTo(ApprenantPromo::class, 'user_id'); // Utilise l'identifiant correct
     }
+
+    // created by
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by'); // Utilise l'identifiant correct
+    }
+
 
 
 

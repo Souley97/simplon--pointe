@@ -19,6 +19,11 @@ return new class extends Migration
         $table->time('heure_present')->nullable();
         $table->time('heure_depart')->nullable();
         $table->foreignId('user_id')->constrained()->onDelete('cascade');
+        // create by
+        $table->unsignedBigInteger('created_by')->nullable();
+
+        // foreign key
+        $table->foreign('created_by')->references('id')->on('users');
         $table->timestamps();
         });
     }
