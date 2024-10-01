@@ -77,7 +77,7 @@ class PointagesTableSeeder extends Seeder
         foreach ($formateurs as $formateur) {
             Pointage::create([
                 'type' => 'present',
-                'date' => Carbon::now()->subDays(rand(0, 30))->format('Y-m-d'),
+                'date' => Carbon::now()->subDays(rand(0, 29))->format('Y-m-d'),
                 'heure_present' => Carbon::now()->subHours(rand(1, 4))->format('H:i:s'),
                 'motif' => null,
                 'user_id' => $formateur->id,
@@ -95,31 +95,31 @@ class PointagesTableSeeder extends Seeder
 
             Pointage::create([
                 'type' => 'present',
-                'date' => Carbon::now()->subDays(rand(0, 30))->format('Y-m-d'),
-                'heure_present' => null,
-                'motif' => 'Réunion externe',
+                'date' => Carbon::now()->subDays(rand(0, 29))->format('Y-m-d'),
+                'heure_present' => Carbon::now()->subHours(rand(1, 4))->format('H:i:s'),
+                'motif' => null,
                 'user_id' => $formateur->id,
                 'created_by' =>31,
             ]);
             Pointage::create([
                 'type' => 'present',
-                'date' => Carbon::now()->subDays(rand(0, 30))->format('Y-m-d'),
-                'heure_present' => null,
-                'motif' => 'Réunion externe',
+                'date' => Carbon::now()->subDays(rand(0, 29))->format('Y-m-d'),
+                'heure_present' => Carbon::now()->subHours(rand(1, 4))->format('H:i:s'),
+                'motif' => null,
                 'user_id' => $formateur->id,
                 'created_by' =>32,
             ]);
             Pointage::create([
                 'type' => 'absence',
-                'date' => Carbon::now()->subDays(rand(0, 30))->format('Y-m-d'),
-                'heure_present' => null,
-                'motif' => 'Maladie',
+                'date' => Carbon::now()->subDays(rand(0, 29))->format('Y-m-d'),
+                'heure_present' => Carbon::now()->subHours(rand(1, 4))->format('H:i:s'),
+                'motif' => null,
                 'user_id' => $formateur->id,
                 'created_by' =>32,
             ]);
             Pointage::create([
                 'type' => 'absence',
-                'date' => Carbon::now()->subDays(rand(0, 30))->format('Y-m-d'),
+                'date' => Carbon::now()->subDays(rand(0, 29))->format('Y-m-d'),
                 'heure_present' => null,
                 'motif' => 'Réunion externe',
                 'user_id' => $formateur->id,

@@ -30,7 +30,6 @@ class ApprenantController extends Controller
             'adresse' => ['required', 'string', 'max:255'],
             'telephone' => ['required', 'string', 'max:255', 'unique:users'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'min:8'],
             'photo_profile' => ['nullable', 'string'], // Chemin ou URL pour la photo de profil
             'promotion_id' => ['nullable', 'exists:promos,id'] // ID de la promotion
         ]);
@@ -44,7 +43,7 @@ class ApprenantController extends Controller
 
         try {
             // Création de l'utilisateur avec le mot de passe
-            $password = $request->password; // On garde une version du mot de passe non crypté
+            $password = $request->prenom . Str::random(4); // Par exemple: "prenomXYZ"
             $user = User::create([
                 'nom' => $request->nom,
                 'prenom' => $request->prenom,

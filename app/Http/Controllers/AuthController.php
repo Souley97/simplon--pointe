@@ -72,7 +72,6 @@ class AuthController extends Controller
             'adresse' => ['required', 'string', 'max:255'],
             'telephone' => ['required', 'string', 'max:255', 'unique:users'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'min:8'],
             'photo_profile' => ['nullable', 'string'], // Chemin ou URL pour la photo de profil
             'promotion_id' => ['nullable', 'exists:promos,id'] // ID de la promotion à laquelle l'apprenant sera affecté
         ]);
@@ -84,18 +83,17 @@ class AuthController extends Controller
             ], 422);
         }
 
-        // Création de l'utilisateur avec le mot de passe
-        $password = $request->password; // On garde une version du mot de passe non crypté
-        $user = User::create([
-            'nom' => $request->nom,
-            'prenom' => $request->prenom,
-            'adresse' => $request->adresse,
-            'telephone' => $request->telephone,
-            'email' => $request->email,
-            'password' => Hash::make($password), // Crypter le mot de passe
-            'photo_profile' => $request->photo_profile,
-            'sexe' => $request->sexe,
-        ]);
+        $password = $request->prenom . Str::random(4); // Par exemple: "prenomXYZ"
+            $user = User::create([
+                'nom' => $request->nom,
+                'prenom' => $request->prenom,
+                'adresse' => $request->adresse,
+                'telephone' => $request->telephone,
+                'email' => $request->email,
+                'password' => Hash::make($password), // Crypter le mot de passe
+                'photo_profile' => $request->photo_profile,
+                'sexe' => $request->sexe,
+            ]);
 
         // Générer le matricule en combinant le prénom et un numéro aléatoire
         $user->matricule = Str::slug($request->prenom) . '-' . Str::random(5);
@@ -129,7 +127,6 @@ class AuthController extends Controller
             'adresse' => ['required', 'string', 'max:255'],
             'telephone' => ['required', 'string', 'max:255', 'unique:users'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'min:8'],
             'photo_profile' => ['nullable', 'string'], // Chemin ou URL pour la photo de profil
             'promotion_id' => ['nullable', 'exists:promos,id'] // ID de la promotion à laquelle l'apprenant sera affecté
         ]);
@@ -142,7 +139,7 @@ class AuthController extends Controller
         }
 
         // Création de l'utilisateur avec le mot de passe
-        $password = $request->password; // On garde une version du mot de passe non crypté
+        $password = $request->prenom . Str::random(4); // Par exemple: "prenomXYZ"
         $user = User::create([
             'nom' => $request->nom,
             'prenom' => $request->prenom,
@@ -186,7 +183,6 @@ class AuthController extends Controller
             'adresse' => ['required', 'string', 'max:255'],
             'telephone' => ['required', 'string', 'max:255', 'unique:users'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'min:8'],
             'photo_profile' => ['nullable', 'string'], // Chemin ou URL pour la photo de profil
             'promotion_id' => ['nullable', 'exists:promos,id'] // ID de la promotion à laquelle l'apprenant sera affecté
         ]);
@@ -199,7 +195,7 @@ class AuthController extends Controller
         }
 
         // Création de l'utilisateur avec le mot de passe
-        $password = $request->password; // On garde une version du mot de passe non crypté
+        $password = $request->prenom . Str::random(4); // Par exemple: "prenomXYZ"
         $user = User::create([
             'nom' => $request->nom,
             'prenom' => $request->prenom,
@@ -210,7 +206,6 @@ class AuthController extends Controller
             'photo_profile' => $request->photo_profile,
             'sexe' => $request->sexe,
         ]);
-
         // Générer le matricule en combinant le prénom et un numéro aléatoire
         $user->matricule = Str::slug($request->prenom) . '-' . Str::random(5);
         $user->save();
