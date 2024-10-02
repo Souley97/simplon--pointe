@@ -646,54 +646,109 @@ public function MesPointages()
 
     }
     // pointageParSemaine
-    public function pointageParSemaine()
-    {
-       $validator = validator($request->all(), [
-        'promo_id' => ['required', 'exists:promos,id'], // Vérifie que la promo existe
-    ]);
+//     public function pointageParSemaine()
+//     {
+//        $validator = validator($request->all(), [
+//         'promo_id' => ['required', 'exists:promos,id'], // Vérifie que la promo existe
+//     ]);
 
-    if ($validator->fails()) {
-        return response()->json([
-            'success' => false,
-            'errors' => $validator->errors(),
-        ], 422);
-    }
+//     if ($validator->fails()) {
+//         return response()->json([
+//             'success' => false,
+//             'errors' => $validator->errors(),
+//         ], 422);
+//     }
 
-    // Récupérer la date d'aujourd'hui
-    $date = $request->input('date');
+//     // Récupérer la date d'aujourd'hui
+//     $date = $request->input('date');
 
-    // Récupérer l'ID de la promotion depuis la requête
-    $promotionId = $request->input('promo_id');
+//     // Récupérer l'ID de la promotion depuis la requête
+//     $promotionId = $request->input('promo_id');
 
-    // Récupérer les utilisateurs (apprenants et formateurs) qui appartiennent à la promotion
-    $users = User::whereHas('promos', function($query) use ($promotionId) {
-        $query->where('promos.id', $promotionId);
+//     // Récupérer les utilisateurs (apprenants et formateurs) qui appartiennent à la promotion
+//     $users = User::whereHas('promos', function($query) use ($promotionId) {
+//         $query->where('promos.id', $promotionId);
+//     })
+//     ->whereHas('roles', function($query) {
+//         $query->whereIn('name', ['Apprenant', 'Formateur']);
+//     })
+//     ->pluck('id'); // Récupère uniquement les IDs des utilisateurs
+
+//     // Récupérer les pointages des utilisateurs pour aujourd'hui
+//     $pointages = Pointage::whereIn('user_id', $users)
+//         ->where('date', $date)
+//         ->with('user') // Charger les informations de l'utilisateur en même temps
+//         ->get();
+
+//     // Vérifier si des pointages ont été trouvés
+//     if ($pointages->isEmpty()) {
+//         return response()->json([
+//             'success' => false,
+//             'message' => 'Aucun apprenant ou formateur n\'a pointé aujourd\'hui dans cette promotion.',
+//         ], 404);
+//     }
+
+//     return response()->json([
+//         'success' => true,
+//         'message' => 'Pointages des apprenants et formateurs récupérés avec succès.',
+//         'pointages' => $pointages,
+//     ]);
+// }
+public function pointageParSemaine(Request $request)
+{
+    // Validation et récupération des paramètres comme précédemment
+  // Valider l'entrée pour s'assurer que promo_id est fourni et valide
+  $validator = validator($request->all(), [
+    'promo_id' => ['required', 'exists:promos,id'], // Vérifie que la promo existe
+    'date' => ['required', 'date'], // Vérifie que la date est valide
+]);
+
+if ($validator->fails()) {
+    return response()->json([
+        'success' => false,
+        'errors' => $validator->errors(),
+    ], 422);
+}
+
+// Récupérer la date donnée depuis la requête
+$date = $request->input('date');
+$promoId = $request->input('promo_id');
+    
+    // Calculer le début et la fin de la semaine
+    $startOfWeek = Carbon::parse($date)->startOfWeek();
+    $endOfWeek = Carbon::parse($date)->endOfWeek();
+
+    // Récupérer les utilisateurs concernés
+    $users = User::whereHas('promos', function($query) use ($promoId) {
+        $query->where('promos.id', $promoId);
     })
     ->whereHas('roles', function($query) {
         $query->whereIn('name', ['Apprenant', 'Formateur']);
     })
-    ->pluck('id'); // Récupère uniquement les IDs des utilisateurs
+    ->pluck('id');
 
-    // Récupérer les pointages des utilisateurs pour aujourd'hui
+    // Récupérer les pointages de la semaine
     $pointages = Pointage::whereIn('user_id', $users)
-        ->where('date', $date)
-        ->with('user') // Charger les informations de l'utilisateur en même temps
+        ->whereBetween('date', [$startOfWeek, $endOfWeek])
+        ->with('user')
         ->get();
 
-    // Vérifier si des pointages ont été trouvés
-    if ($pointages->isEmpty()) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Aucun apprenant ou formateur n\'a pointé aujourd\'hui dans cette promotion.',
-        ], 404);
+    // Structurer les données pour renvoyer par jour
+    $result = [];
+    foreach ($pointages as $pointage) {
+        $jour = Carbon::parse($pointage->date)->format('l'); // Obtenir le jour de la semaine
+        $result[$pointage->user_id]['user'] = $pointage->user;
+        $result[$pointage->user_id]['date'][$jour] = $pointage->heure_present; // Stocker l'heure présente
     }
 
+    // Renvoyer les données structurées
     return response()->json([
         'success' => true,
-        'message' => 'Pointages des apprenants et formateurs récupérés avec succès.',
-        'pointages' => $pointages,
+        'pointages' => array_values($result), // Pour obtenir un tableau indexé
     ]);
 }
+
+
 public function pointageParSemaineUnPromo(Request $request, $promo_id)
 {
     $startOfWeek = Carbon::parse($request->input('start_date'))->startOfWeek();

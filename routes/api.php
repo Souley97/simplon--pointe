@@ -66,7 +66,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/pointages/moi', [PointageController::class, 'MesPointages'])->name('pointage/moi');
     Route::get('/promo/{promoId}/pointages-aujourd-hui', [PointageController::class, 'afficherPointagesAujourdHuiParPromo']);
     // pointagePar semaine
-    Route::get('/pointages/semaines', [PointageController::class, 'pointageParSemaine'])->name('pointage/semaine');
+    Route::post('/pointages/semaines', [PointageController::class, 'pointageParSemaine'])->name('pointage/semaine');
     Route::POST ('/promo/{promo_id}/pointages-semaine', [PointageController::class, 'pointageParSemaineUnPromo']);
     Route::get('/pointages/aujourdhui', [PointageController::class, 'afficherPointagesAujourdHui'])->name('pointage/user');
     Route::get('/pointages/aujourdhui/tous', [PointageController::class, 'afficherPointagesAujourdHuiTous'])->name('pointage/user');
