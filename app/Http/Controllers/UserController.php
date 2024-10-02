@@ -38,7 +38,7 @@ class UserController extends Controller
 
             // Stockage de la nouvelle photo_profile
             $photo_profile = $request->file('photo_profile');
-            $user->photo_profile = $photo_profile->store('users', 'public');
+            $user->photo_profile = $photo_profile->store('profile', 'public');
         }
 
         // Mise à jour des informations
@@ -55,6 +55,7 @@ class UserController extends Controller
             'user' => $user
         ], 200);
     }
+
     public function chefsProjet()
 {
     $chefs = User::whereHas('roles', function($query) {

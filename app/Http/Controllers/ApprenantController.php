@@ -30,7 +30,7 @@ class ApprenantController extends Controller
             'adresse' => ['required', 'string', 'max:255'],
             'telephone' => ['required', 'string', 'max:255', 'unique:users'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'photo_profile' => ['nullable', 'string'], // Chemin ou URL pour la photo de profil
+            'photo_profile' => 'nullable|file|mimes:jpeg,png,jpg|max:2048',
             'promotion_id' => ['nullable', 'exists:promos,id'] // ID de la promotion
         ]);
 
@@ -42,35 +42,39 @@ class ApprenantController extends Controller
         }
 
         try {
-            // Création de l'utilisateur avec le mot de passe
-            $password = $request->prenom . Str::random(4); // Par exemple: "prenomXYZ"
+            // Handle profile picture upload
+            $photo_profile = null;
+            if ($request->hasFile('photo_profile')) {
+                $photo_profile = $request->file('photo_profile')->store('profiles', 'public');
+            }
+
+            // Create the user with the password
+            $password = $request->prenom . Str::random(4); // Example: "prenomXYZ"
             $user = User::create([
                 'nom' => $request->nom,
                 'prenom' => $request->prenom,
                 'adresse' => $request->adresse,
                 'telephone' => $request->telephone,
                 'email' => $request->email,
-                'password' => Hash::make($password), // Crypter le mot de passe
-                'photo_profile' => $request->photo_profile,
+                'password' => Hash::make($password), // Encrypt the password
+                'photo_profile' => $photo_profile, // Store the photo path if available
                 'sexe' => $request->sexe,
             ]);
 
-            // Générer le matricule
+            // Generate and save the matricule
             $user->matricule = Str::slug($request->prenom) . '-' . Str::random(5);
             $user->save();
 
-            // Vérifier si le rôle d'apprenant existe, sinon le créer
+            // Assign role and promotion if necessary
             $role = Role::firstOrCreate(['name' => 'Apprenant']);
             $user->assignRole($role);
 
-            // Assigner à une promotion si l'ID de promotion est fourni
             if ($request->has('promotion_id')) {
                 $user->promotions()->attach($request->promotion_id);
             }
 
-            // Envoi de la notification par email
+            // Send email notification
             $user->notify(new ApprenantInscriptionNotification($user, $password));
-            // Mail::to($user->email)->send(new ApprenantInscritMail($user, $password));
 
             return response()->json([
                 'success' => true,
@@ -78,13 +82,13 @@ class ApprenantController extends Controller
                 'user' => $user
             ], 201);
         } catch (\Exception $e) {
-            // Retourner une réponse d'erreur si une exception survient
             return response()->json([
                 'success' => false,
                 'message' => 'Une erreur est survenue : ' . $e->getMessage()
             ], 500);
         }
     }
+
 
 
     public function inscrireApprenantsExcel(Request $request)
