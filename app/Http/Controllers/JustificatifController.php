@@ -18,7 +18,7 @@ class JustificatifController extends Controller
         // Validation des données du formulaire
         $validator = Validator::make($request->all(), [
             'description' => 'nullable|string',
-            'document' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048', // Fichier requis, types acceptés : pdf, jpg, etc.
+            'document' => 'required|file|mimes:pdf,jpg,jpeg,png|max:20048', // Fichier requis, types acceptés : pdf, jpg, etc.
         ]);
 
         if ($validator->fails()) {
@@ -82,13 +82,14 @@ public function VoirJustifierAbsence(Request $request, $pointageId)
     }
 
     // Return the justification data
-    return response()->json([
-        'justification' => [
-            'description' => $justification->description,
-            'document' => $justification->document_path, // Adjust according to your model
-            'created_at' => $justification->created_at,
-        ],
-    ], 200);
+        return response()->json([
+            'justification' => [
+                'description' => $justification->description,
+                'document' => $justification->document, // Utilisez 'document' au lieu de 'document_path'
+                'created_at' => $justification->created_at,
+            ],
+        ], 200);
+
 }
 
 }

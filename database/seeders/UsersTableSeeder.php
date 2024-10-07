@@ -148,6 +148,6 @@ class UsersTableSeeder extends Seeder
 
             // Assigner le Chef de projet à une promotion
             $promo3 = Promo::find(3); // Associer à une autre promo existante
-            $chefDeProjet->promos()->attach($promo2);
+            $chefDeProjet->promos()->attach($promo3);
     }
 }

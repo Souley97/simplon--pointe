@@ -52,7 +52,7 @@ class ApprenantInscriptionNotification extends Notification
             ->line('**Email** : ' . $this->user->email)
             ->line('**Mot de passe** : ' . $this->password)
             ->line('Nous vous recommandons de changer ce mot de passe après votre première connexion.')
-            ->action('Accéder à la plateforme', url('/login'))
+            ->action('Accéder à la plateforme', url('https://simplon-pointage.vercel.app'))
             ->line('Merci de faire partie de notre communauté.');
     }
 

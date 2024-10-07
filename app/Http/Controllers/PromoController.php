@@ -150,15 +150,6 @@ class PromoController extends Controller
 
 
 
-    //
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -174,7 +165,7 @@ class PromoController extends Controller
         }
 
         // Création de la promotion
-        $promo = Promo::create([
+        $promo = Promo::file([
             'nom' => $request->input('nom'),
             'date_debut' => $request->input('date_debut'),
             'date_fin' => $request->input('date_fin'),
@@ -184,6 +175,9 @@ class PromoController extends Controller
             'chef_projet_id' => $request->input('chef_projet_id'),
             'formation_id' => $request->input('formation_id'),
         ]);
+        // si le nom de promo dans un formation
+
+
 
         // Retourner la promotion nouvellement créée
         return response()->json([

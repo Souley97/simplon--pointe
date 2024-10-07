@@ -63,7 +63,7 @@ class PointageController extends Controller
 
          // Déterminer l'heure actuelle et le type de pointage
          $heure_actuelle = now();
-         $heure_limite = now()->setTime(19, 0);
+         $heure_limite = now()->setTime(9, 0);
          $type = $heure_actuelle->greaterThan($heure_limite) ? 'retard' : 'present';
 
          // Si l'utilisateur a été marqué comme absence, mettre à jour le pointage existant
@@ -189,15 +189,54 @@ if (!$vigile->hasRole('Vigile')) {
             ]);
         }
 
+        // public function marquerAbsences()
+        // {
+        //     // Obtenir la date d'aujourd'hui
+        //     $dateAujourdHui = now()->toDateString();
+
+        //     // Récupérer les utilisateurs dont la promo est en cours
+        //     $users = User::whereHas('promos', function ($query) {
+        //         $query->where('date_debut', '<=', now())
+        //               ->where('date_fin', '>=', now());
+        //     })->get();
+
+        //     // Parcourir les utilisateurs de la promotion en cours
+        //     foreach ($users as $user) {
+        //         // Vérifier si l'utilisateur a déjà pointé aujourd'hui
+        //         $pointage = Pointage::where('user_id', $user->id)
+        //             ->where('date', $dateAujourdHui)
+        //             ->first();
+
+        //         // Si aucun pointage trouvé, marquer comme absence
+        //         if (!$pointage) {
+        //             Pointage::create([
+        //                 'user_id' => $user->id,
+        //                 'type' => 'absence', // Assurez-vous que le type 'absence' est correct dans votre énumération
+        //                 'date' => $dateAujourdHui,
+        //                 'created_by' => auth()->id(), // Utilisateur qui enregistre l'absence
+        //             ]);
+        //         }
+        //     }
+
+        //     return response()->json([
+        //         'success' => true,
+        //         'message' => 'Absences marquées avec succès pour les utilisateurs de la promotion en cours.',
+        //     ]);
+        // }
+
         public function marquerAbsences()
         {
             // Obtenir la date d'aujourd'hui
             $dateAujourdHui = now()->toDateString();
 
-            // Récupérer les utilisateurs dont la promo est en cours
-            $users = User::whereHas('promos', function ($query) {
+            // Récupérer l'utilisateur formateur connecté
+            $formateur = auth()->user();
+
+            // Récupérer les utilisateurs dont la promo est en cours et dont le formateur est l'utilisateur connecté
+            $users = User::whereHas('promos', function ($query) use ($formateur) {
                 $query->where('date_debut', '<=', now())
-                      ->where('date_fin', '>=', now());
+                      ->where('date_fin', '>=', now())
+                      ->where('formateur_id', $formateur->id); // Filtrer par formateur connecté
             })->get();
 
             // Parcourir les utilisateurs de la promotion en cours
@@ -213,7 +252,7 @@ if (!$vigile->hasRole('Vigile')) {
                         'user_id' => $user->id,
                         'type' => 'absence', // Assurez-vous que le type 'absence' est correct dans votre énumération
                         'date' => $dateAujourdHui,
-                        'created_by' => auth()->id(), // Utilisateur qui enregistre l'absence
+                        'created_by' => $formateur->id, // Utilisateur qui enregistre l'absence (formateur)
                     ]);
                 }
             }
@@ -223,7 +262,6 @@ if (!$vigile->hasRole('Vigile')) {
                 'message' => 'Absences marquées avec succès pour les utilisateurs de la promotion en cours.',
             ]);
         }
-
 
         public function afficherPointagesAujourdHui(Request $request)
         {
@@ -713,7 +751,7 @@ if ($validator->fails()) {
 // Récupérer la date donnée depuis la requête
 $date = $request->input('date');
 $promoId = $request->input('promo_id');
-    
+
     // Calculer le début et la fin de la semaine
     $startOfWeek = Carbon::parse($date)->startOfWeek();
     $endOfWeek = Carbon::parse($date)->endOfWeek();
@@ -747,6 +785,7 @@ $promoId = $request->input('promo_id');
         'pointages' => array_values($result), // Pour obtenir un tableau indexé
     ]);
 }
+
 
 
 public function pointageParSemaineUnPromo(Request $request, $promo_id)

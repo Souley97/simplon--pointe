@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\CongeController;
 use App\Http\Controllers\PromoController;
 use App\Http\Controllers\QRCodeController;
 use App\Http\Controllers\FabriqueController;
@@ -76,6 +77,13 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/justifier-absence/{absence}', [JustificatifController::class, 'justifierAbsence']);
 
     Route::get('/justifier-absence/{pointageId}', [JustificatifController::class, 'VoirJustifierAbsence']);
+
+    Route::post('/conges', [CongeController::class, 'store']);
+    Route::get('/conges', [CongeController::class, 'index']);
+    Route::get('/mes/conges', [CongeController::class, 'myConge']);
+    Route::PATCH('/conges/{id}/status', [CongeController::class, 'updateStatus']);
+    Route::DELETE('/conges/{id}', [CongeController::class, 'destroy']);
+
 
 
 });

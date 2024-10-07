@@ -25,10 +25,10 @@ class PromosTableSeeder extends Seeder
         Promo::create([
             'nom' => 'Promo 7',
             'date_debut' => '2023-11-24',
-            'date_fin' => '2024-10-01',
+            'date_fin' => '2024-10-17',
             'statut' => 'encours',
             'fabrique_id' => 3, // Associe une fabrique aléatoirement
-            'formateur_id' => 1, // Associe un formateur aléatoirement
+            'formateur_id' => 30, // Associe un formateur aléatoirement
             'chef_projet_id' => $chefsDeProjet->random()->id, // Associe un chef de projet aléatoirement
             'formation_id' => $formations->random()->id, // Associe une formation aléatoirement
         ]);
@@ -47,7 +47,7 @@ class PromosTableSeeder extends Seeder
         Promo::create([
             'nom' => 'Promo 3',
             'date_debut' => '2024-03-01',
-            'date_fin' => '2025-03-01',
+            'date_fin' => '2024-08-01',
             'statut' => 'termine',
             'fabrique_id' => $fabriques->random()->id,
             'formateur_id' => $formateurs->random()->id,
