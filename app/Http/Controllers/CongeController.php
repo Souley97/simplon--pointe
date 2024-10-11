@@ -12,9 +12,10 @@ class CongeController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        // Validate the request input
+        $validatedData = $request->validate([
             'type' => 'required|in:congé,permission,absence',
-            'date_debut' => 'required|date',
+            'date_debut' => 'required|date|after_or_equal:today',
             'date_fin' => 'nullable|date|after_or_equal:date_debut',
             'motif' => 'nullable|string',
         ], [
@@ -26,16 +27,17 @@ class CongeController extends Controller
             'date_fin.after_or_equal' => 'La date de fin doit être après ou égale à la date de début.',
         ]);
 
-
+        // Create the Conge instance
         $conge = Conge::create([
             'user_id' => auth()->id(),
-            'type' => $request->type,
-            'date_debut' => $request->date_debut,
-            'date_fin' => $request->date_fin,
-            'motif' => $request->motif,
-            'status' => 'en attente',
+            'type' => $validatedData['type'], // Access array data with correct syntax
+            'date_debut' => $validatedData['date_debut'],
+            'date_fin' => $validatedData['date_fin'],
+            'motif' => $validatedData['motif'],
+            'status' =>  'en attente',
         ]);
 
+        // Return the created Conge instance as a JSON response
         return response()->json($conge, 201);
     }
 
@@ -55,7 +57,7 @@ class CongeController extends Controller
     {
         try {
             $conge = Conge::findOrFail($id);
-            
+
             $conge->delete();
 
             return response()->json(['message' => 'Congé supprimé avec succès.']);

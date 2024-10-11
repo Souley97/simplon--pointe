@@ -95,7 +95,78 @@ if ($semaine) {
             'message' => 'Pointages des apprenants et formateurs récupérés avec succès.',
             'pointages' => $pointages,
         ]);
+    }public function staticPromo(Request $request)
+    {
+        // Récupération des paramètres de la requête
+        $promotionId = $request->input('promo_id');
+        $dateDebut = $request->input('date_debut');
+        $dateFin = $request->input('date_fin');
+
+        // Validation des paramètres
+        $validator = Validator::make($request->all(), [
+            'promo_id' => ['required', 'exists:promos,id'],
+            'date_debut' => ['required', 'date'],
+            'date_fin' => ['required', 'date', 'after_or_equal:date_debut'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        // Récupérer les utilisateurs de la promotion
+        $users = User::whereHas('promos', function ($query) use ($promotionId) {
+            $query->where('promos.id', $promotionId);
+        })->pluck('id');
+
+        // Récupérer les pointages dans la période spécifiée
+        $pointages = Pointage::whereIn('user_id', $users)
+            ->whereBetween('date', [$dateDebut, $dateFin])
+            ->get(['date', 'type']); // Sélectionner uniquement les champs nécessaires
+
+        // Regroupement des pointages par semaine et par mois
+        $pointagesGroupedByWeek = $pointages->groupBy(function ($pointage) {
+            return Carbon::parse($pointage->date)->format('W');
+        });
+
+        $pointagesGroupedByMonth = $pointages->groupBy(function ($pointage) {
+            return Carbon::parse($pointage->date)->format('Y-m');
+        });
+
+        // Calcul des statistiques par semaine (avec date de début et fin de semaine)
+        $statistiquesParSemaine = $pointagesGroupedByWeek->map(function ($weekData, $weekNumber) {
+            $dates = $weekData->pluck('date')->sort();
+            $dateDebut = Carbon::parse($dates->first())->startOfWeek()->format('Y-m-d');
+            $dateFin = Carbon::parse($dates->last())->endOfWeek()->format('Y-m-d');
+
+            return [
+                'absences' => $weekData->where('type', 'absence')->count(),
+                'retards' => $weekData->where('type', 'retard')->count(),
+                'date_debut' => $dateDebut,
+                'date_fin' => $dateFin,
+            ];
+        });
+
+        // Calcul des statistiques par mois
+        $statistiquesParMois = $pointagesGroupedByMonth->map(function ($monthData) {
+            return [
+                'absences' => $monthData->where('type', 'absence')->count(),
+                'retards' => $monthData->where('type', 'retard')->count(),
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'absences_totales' => $pointages->where('type', 'absence')->count(),
+            'retards_totaux' => $pointages->where('type', 'retard')->count(),
+            'statistiques_semaine' => $statistiquesParSemaine,
+            'statistiques_mois' => $statistiquesParMois,
+        ]);
     }
+
+
     public function afficherPointagesPromos(Request $request)
     {
         $promotionId = $request->query('promo_id');

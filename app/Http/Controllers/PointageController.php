@@ -342,6 +342,7 @@ if (!$vigile->hasRole('Vigile')) {
         'pointages' => $usersAvecPointage,
     ]);
 }
+
     public function afficherPointagesAujourdHuiParPromo(Request $request, $promoId)
     {
         // Récupérer la date d'aujourd'hui

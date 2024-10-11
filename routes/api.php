@@ -31,12 +31,15 @@ Route::get('/qr/{matricule}', [QRCodeController::class, 'showQr']);
 Route::middleware('auth:api')->group(function () {
 
     // Routes pour inscription d'apprenants , formateurs, ChefDeProjers, Vigiles
-    Route::post('/apprenant/inscrire', [ApprenantController::class, 'inscrireApprenant']);
     Route::post('/formateur/inscrire', [AuthController::class, 'inscrireFormateur']);
     Route::post('/chef-de-projet/inscrire', [AuthController::class, 'inscrireChefDeProjet']);
     Route::post('/vigile/inscrire', [AuthController::class, 'inscrireVigile']);
+    Route::post('/apprenants/import', [ApprenantController::class, 'inscrireApprenantsExcel']);
+    Route::post('/apprenant/inscrire', [ApprenantController::class, 'inscrireApprenant']);
 
 
+
+    // Routes pour promos
     Route::get('/promos/formateur', [PromoController::class, 'mesPromos']);
     Route::get('/promos/encours', [PromoController::class, 'mesPromosEncours']);
     Route::get('/promos/terminer', [PromoController::class, 'mesPromosTermine']);
@@ -44,6 +47,22 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/promos', [PromoController::class, 'index']);
     Route::post('/promos', [PromoController::class, 'store']);
     Route::put('/promos', [PromoController::class, 'update']);
+
+
+// Afficher les pointages d'une promotion aujourd'hui
+    Route::get('/promos/{promo}/pointages-aujourdhui', [PointageController::class, 'MesPointagesdesmonPromo']);
+
+    // MesPointagesdesmonPromo
+    // Route::get(uri: '/promos/{promo}/pointages-mon-promo', [PromoController::class, 'mesPointagesPromo']);
+    // Mes pointages (utilisateur connecté)
+    Route   ::get('/mes-pointages', [PromoController::class, 'mesPointages']);
+
+    // promo encours
+    Route::get('/admin/promos/encours', [PromoController::class, 'promosEncours']);
+    Route::get('/admin/promos/terminees', [PromoController::class, 'promosTerminees']);
+    // mes promo termier
+
+// });
 
     Route::get('/pointages/moi/apprenant', [ApprenantController::class, 'MesPointages'])->name('pointage.moi');
 
@@ -56,84 +75,62 @@ Route::middleware('auth:api')->group(function () {
 
     Route::post('/pointage/arrivee', [PointageController::class, 'pointageArrivee']);
     Route::post('/pointage/depart', [PointageController::class, 'pointageDepart']);
+
+ // Routes pour pointages
     Route::get('/pointages/all', [PointageController::class, 'afficherPointagesAujourdHui'])->name('pointage');
     Route::get('/pointages/promo/all', [PointageController::class, 'afficherPointagesPromoAujourdHui'])->name('pointage');
-
-        Route::get('/pointages/promo/aujourhui', [PointageController::class, 'afficherPointagesPromoAujourdHui'])->name('pointage');
-
+    Route::get('/pointages/promo/aujourhui', [PointageController::class, 'afficherPointagesPromoAujourdHui'])->name('pointage');
     Route::get('/pointages/promo', [FormateurController::class, 'afficherPointagesPromo']);
     Route::get('/pointages/promos', [FormateurController::class, 'afficherPointagesPromos']);
-    // Route::get('/pointages/promo', [PointageController::class, 'afficherPointagesPromo']);
     Route::get('/pointages/moi', [PointageController::class, 'MesPointages'])->name('pointage/moi');
     Route::get('/promo/{promoId}/pointages-aujourd-hui', [PointageController::class, 'afficherPointagesAujourdHuiParPromo']);
     // pointagePar semaine
+    Route::get('/pointages/aujourdhui', [PointageController::class, 'afficherPointagesAujourdHui'])->name('pointage/user');
     Route::post('/pointages/semaines', [PointageController::class, 'pointageParSemaine'])->name('pointage/semaine');
     Route::POST ('/promo/{promo_id}/pointages-semaine', [PointageController::class, 'pointageParSemaineUnPromo']);
-    Route::get('/pointages/aujourdhui', [PointageController::class, 'afficherPointagesAujourdHui'])->name('pointage/user');
-    Route::get('/pointages/aujourdhui/tous', [PointageController::class, 'afficherPointagesAujourdHuiTous'])->name('pointage/user');
+    Route::POST('/promos/static', [FormateurController::class, 'staticPromo'])->name('pointage/static');
 
-
+ // Routes pour justifier
 
     Route::post('/justifier-absence/{absence}', [JustificatifController::class, 'justifierAbsence']);
-
     Route::get('/justifier-absence/{pointageId}', [JustificatifController::class, 'VoirJustifierAbsence']);
 
+     // Routes pour conges
     Route::post('/conges', [CongeController::class, 'store']);
     Route::get('/conges', [CongeController::class, 'index']);
-    Route::get('/mes/conges', [CongeController::class, 'myConge']);
     Route::PATCH('/conges/{id}/status', [CongeController::class, 'updateStatus']);
     Route::DELETE('/conges/{id}', [CongeController::class, 'destroy']);
+    Route::get('/mes/conges', [CongeController::class, 'myConge']);
+
+     // Routes pour formations
+    Route::get('/formations', [FormationController::class, 'index']);
+    Route::post('/formations', [FormationController::class, 'store']);
+    Route::get('/formations/{formation}', [FormationController::class, 'show']);
+    Route::post('/formations/{formation}', [FormationController::class, 'update']);
+    Route::delete('/formations/{formation}', [FormationController::class, 'destroy']);
+    Route::get('/formations/{id}/promos', [FormationController::class, 'promos']);
 
 
+     // Routes pour fabriques
 
-});
-
-
-Route::post('/promos/{promo}', [PromoController::class, 'update'])->middleware('auth:api');
-Route::get('/promos/{promo}', [PromoController::class, 'show']);
-
-// Afficher les pointages d'une promotion aujourd'hui
-Route::get('/promos/{promo}/pointages-aujourdhui', [PointageController::class, 'MesPointagesdesmonPromo'])->middleware('auth:api');
-
-// MesPointagesdesmonPromo
-Route::get('/promos/{promo}/pointages-mon-promo', [PromoController::class, 'mesPointagesPromo'])->middleware('auth:api');
-// Mes pointages (utilisateur connecté)
-Route   ::get('/mes-pointages', [PromoController::class, 'mesPointages'])->middleware('auth:api');
-
-// promo encours
-Route::get('/admin/promos/encours', [PromoController::class, 'promosEncours'])->middleware('auth:api');
-Route::get('/admin/promos/terminees', [PromoController::class, 'promosTerminees'])->middleware('auth:api');
-// mes promo termier
-
-// });
-
-Route::get('/formations', [FormationController::class, 'index']);
-Route::post('/formations', [FormationController::class, 'store']);
-Route::get('/formations/{formation}', [FormationController::class, 'show']);
-Route::post('/formations/{formation}', [FormationController::class, 'update']);
-Route::delete('/formations/{formation}', [FormationController::class, 'destroy']);
-Route::get('/formations/{id}/promos', [FormationController::class, 'promos']);
+    Route::get('/fabriques', [FabriqueController::class, 'index']);
+    Route::post('/fabriques', [FabriqueController::class, 'store']);
+    Route::get('/fabriques/{fabrique}', [FabriqueController::class, 'show']);
+    Route::post('/fabriques/{fabrique}', [FabriqueController::class, 'update']);
+    Route::delete('/fabriques/{fabrique}', [FabriqueController::class, 'destroy']);
+    Route::get('/fabriques/{id}/promos', [FabriqueController::class, 'promos']);
 
 
+    Route::get('/chefs-projet', [UserController::class, 'chefsProjet']);
 
-Route::get('/fabriques', [FabriqueController::class, 'index']);
-Route::post('/fabriques', [FabriqueController::class, 'store']);
-Route::get('/fabriques/{fabrique}', [FabriqueController::class, 'show']);
-Route::post('/fabriques/{fabrique}', [FabriqueController::class, 'update']);
-Route::delete('/fabriques/{fabrique}', [FabriqueController::class, 'destroy']);
-Route::get('/fabriques/{id}/promos', [FabriqueController::class, 'promos']);
+    Route::middleware('auth:api')->group(function () {
 
-Route::post('apprenants/import', [ApprenantController::class, 'inscrireApprenantsExcel']);
-Route::get('/chefs-projet', [UserController::class, 'chefsProjet']);
-
-Route::middleware('auth:api')->group(function () {
-
-// formateur
-Route::get('/formateurs', [FormateurController::class, 'ListeFormateurs']);
-Route::get('formateurs/promotions', [FormateurController::class, 'getPromotions']);
+    // formateur
+    Route::get('/formateurs', [FormateurController::class, 'ListeFormateurs']);
+    Route::get('formateurs/promotions', [FormateurController::class, 'getPromotions']);
 
 // Route::post('/formateurs', [FormateurController::class, 'store']);
-
+});
 
 // routes/api.php
 Route::get('/user/role', function (Request $request) {
