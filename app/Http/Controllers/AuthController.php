@@ -10,12 +10,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Notifications\ApprenantInscriptionNotification;
 
+use Illuminate\Support\Facades\RateLimiter;
 
 class AuthController extends Controller
 {
-    public function login(Request $request)
+      public function login(Request $request)
     {
-        // Validation des données
+        // Validation des données de la requête
         $validator = validator($request->all(), [
             'email' => ['required', 'email', 'string'],
             'password' => ['required', 'string'],
@@ -27,36 +28,46 @@ class AuthController extends Controller
             ], 422);
         }
 
+        // Créer une clé unique pour le throttling basé sur l'email de l'utilisateur et l'adresse IP
+        $throttleKey = $request->input('email').'|'.$request->ip();
+
+        // Vérifier si trop de tentatives ont été effectuées
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+            return response()->json([
+                'message' => "Trop de tentatives de connexion. Réessayez dans $seconds secondes.",
+            ], 429); // Code de statut HTTP 429 pour "Trop de requêtes"
+        }
+
         // Vérifier si l'utilisateur existe
         $user = User::where('email', $request->email)->first();
         if (!$user) {
+            RateLimiter::hit($throttleKey, 10); // Incrémenter le compteur de tentatives
             return response()->json([
                 'message' => 'Utilisateur non trouvé',
-            ], 404); // User not found
+            ], 404);
         }
 
         // Vérifier si le mot de passe est correct
         if (!Hash::check($request->password, $user->password)) {
+            RateLimiter::hit($throttleKey, 60); // Incrémenter le compteur en cas de mot de passe incorrect
             return response()->json([
                 'message' => 'Mot de passe incorrect',
-            ], 401); // Incorrect password
+            ], 401);
         }
 
-        // Authentification réussie, générer le token
-        $token = auth()->guard('api')->login($user);
+        // Authentification réussie, réinitialiser les tentatives
+        RateLimiter::clear($throttleKey); // Réinitialiser le compteur de tentatives réussie
 
-        // Obtenir les rôles de l'utilisateur
-        $roles = $user->getRoleNames();
+        // Générer le token JWT
+        $token = auth()->guard('api')->login($user);
 
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
-            'roles' => $roles,
-            'user' => $user,
             'expires_in' => auth()->guard('api')->factory()->getTTL() * 60, // Expiration en secondes
         ]);
     }
-
     // logout
       public function logout()
     {

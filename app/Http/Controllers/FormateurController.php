@@ -95,7 +95,10 @@ if ($semaine) {
             'message' => 'Pointages des apprenants et formateurs récupérés avec succès.',
             'pointages' => $pointages,
         ]);
-    }public function staticPromo(Request $request)
+    }
+
+
+    public function staticPromo(Request $request)
     {
         // Récupération des paramètres de la requête
         $promotionId = $request->input('promo_id');
