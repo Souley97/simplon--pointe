@@ -52,17 +52,13 @@ Route::middleware('auth:api')->group(function () {
 // Afficher les pointages d'une promotion aujourd'hui
     Route::get('/promos/{promo}/pointages-aujourdhui', [PointageController::class, 'MesPointagesdesmonPromo']);
 
-    // MesPointagesdesmonPromo
-    // Route::get(uri: '/promos/{promo}/pointages-mon-promo', [PromoController::class, 'mesPointagesPromo']);
-    // Mes pointages (utilisateur connecté)
+
     Route   ::get('/mes-pointages', [PromoController::class, 'mesPointages']);
 
     // promo encours
     Route::get('/admin/promos/encours', [PromoController::class, 'promosEncours']);
     Route::get('/admin/promos/terminees', [PromoController::class, 'promosTerminees']);
-    // mes promo termier
 
-// });
 
     Route::get('/pointages/moi/apprenant', [ApprenantController::class, 'MesPointages'])->name('pointage.moi');
 
@@ -78,17 +74,18 @@ Route::middleware('auth:api')->group(function () {
 
  // Routes pour pointages
     Route::get('/pointages/all', [PointageController::class, 'afficherPointagesAujourdHui'])->name('pointage');
-    Route::get('/pointages/promo/all', [PointageController::class, 'afficherPointagesPromoAujourdHui'])->name('pointage');
-    Route::get('/pointages/promo/aujourhui', [PointageController::class, 'afficherPointagesPromoAujourdHui'])->name('pointage');
+    Route::get('/pointages/promo/all', [PointageController::class, 'afficherPointagesPromoAujourdHui']);
+    Route::get('/pointages/promo/aujourhui', [PointageController::class, 'afficherPointagesPromoAujourdHui']);
     Route::get('/pointages/promo', [FormateurController::class, 'afficherPointagesPromo']);
     Route::get('/pointages/promos', [FormateurController::class, 'afficherPointagesPromos']);
     Route::get('/pointages/moi', [PointageController::class, 'MesPointages'])->name('pointage/moi');
     Route::get('/promo/{promoId}/pointages-aujourd-hui', [PointageController::class, 'afficherPointagesAujourdHuiParPromo']);
     // pointagePar semaine
     Route::get('/pointages/aujourdhui', [PointageController::class, 'afficherPointagesAujourdHui'])->name('pointage/user');
-    Route::post('/pointages/semaines', [PointageController::class, 'pointageParSemaine'])->name('pointage/semaine');
+    Route::post('/pointages/semaines', [PointageController::class, 'pointageParSemaine']);
     Route::POST ('/promo/{promo_id}/pointages-semaine', [PointageController::class, 'pointageParSemaineUnPromo']);
     Route::POST('/promos/static', [FormateurController::class, 'staticPromo'])->name('pointage/static');
+    Route::post('/pointages/periode', [PointageController::class, 'pointageParPeriode']);
 
  // Routes pour justifier
 
@@ -128,6 +125,7 @@ Route::middleware('auth:api')->group(function () {
     // formateur
     Route::get('/formateurs', [FormateurController::class, 'ListeFormateurs']);
     Route::get('formateurs/promotions', [FormateurController::class, 'getPromotions']);
+    Route::get('/personnels/listes', [UserController::class, 'personnelListe']);
 
 // Route::post('/formateurs', [FormateurController::class, 'store']);
 });

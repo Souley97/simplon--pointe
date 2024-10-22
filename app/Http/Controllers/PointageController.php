@@ -9,8 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StorePointageRequest;
-use App\Http\Requests\UpdatePointageRequest;
+use Barryvdh\DomPDF\Facade\Pdf; // Assurez-vous d'installer la bibliothèque dompdf si ce n'est pas déjà fait
+use Illuminate\Support\Facades\Validator;
+
 
 class PointageController extends Controller
 {
@@ -189,40 +190,7 @@ if (!$vigile->hasRole('Vigile')) {
             ]);
         }
 
-        // public function marquerAbsences()
-        // {
-        //     // Obtenir la date d'aujourd'hui
-        //     $dateAujourdHui = now()->toDateString();
-
-        //     // Récupérer les utilisateurs dont la promo est en cours
-        //     $users = User::whereHas('promos', function ($query) {
-        //         $query->where('date_debut', '<=', now())
-        //               ->where('date_fin', '>=', now());
-        //     })->get();
-
-        //     // Parcourir les utilisateurs de la promotion en cours
-        //     foreach ($users as $user) {
-        //         // Vérifier si l'utilisateur a déjà pointé aujourd'hui
-        //         $pointage = Pointage::where('user_id', $user->id)
-        //             ->where('date', $dateAujourdHui)
-        //             ->first();
-
-        //         // Si aucun pointage trouvé, marquer comme absence
-        //         if (!$pointage) {
-        //             Pointage::create([
-        //                 'user_id' => $user->id,
-        //                 'type' => 'absence', // Assurez-vous que le type 'absence' est correct dans votre énumération
-        //                 'date' => $dateAujourdHui,
-        //                 'created_by' => auth()->id(), // Utilisateur qui enregistre l'absence
-        //             ]);
-        //         }
-        //     }
-
-        //     return response()->json([
-        //         'success' => true,
-        //         'message' => 'Absences marquées avec succès pour les utilisateurs de la promotion en cours.',
-        //     ]);
-        // }
+       
 
         public function marquerAbsences()
         {
@@ -529,64 +497,6 @@ public function MesPointagesdesmonPromo(Request $request, $promoId)
 
 
 
-// public function afficherPointagesPromo(Request $request)
-//     {
-//         // Récupérer l'ID de la promotion depuis les paramètres de la requête GET
-//         $promotionId = $request->query('promo_id');
-
-//         // Validation des données d'entrée
-//         $validator = validator(['promo_id' => $promotionId], [
-//             'promo_id' => ['required', 'exists:promos,id'], // Vérifie que la promo existe
-//         ]);
-
-//         if ($validator->fails()) {
-//             return response()->json([
-//                 'success' => false,
-//                 'errors' => $validator->errors(),
-//             ], 422);
-//         }
-
-//         // Récupérer la promotion avec sa date de début
-//         $promotion = Promo::find($promotionId);
-
-//         // Si la promotion n'est pas trouvée (par sécurité)
-//         if (!$promotion) {
-//             return response()->json([
-//                 'success' => false,
-//                 'message' => 'La promotion n\'existe pas.',
-//             ], 404);
-//         }
-
-//         // Récupérer les utilisateurs (apprenants et formateurs) qui appartiennent à la promotion
-//         $users = User::whereHas('promos', function ($query) use ($promotionId) {
-//             $query->where('promos.id', $promotionId);
-//         })
-//         ->whereHas('roles', function ($query) {
-//             $query->whereIn('name', ['Apprenant', 'Formateur']);
-//         })
-//         ->pluck('id'); // Récupérer uniquement les IDs des utilisateurs
-
-//         // Récupérer les pointages depuis la date de début de la promotion jusqu'à aujourd'hui
-//         $pointages = Pointage::whereIn('user_id', $users)
-//             ->whereBetween('date', [$promotion->date_debut, now()->toDateString()]) // Filtrer entre la date de début et aujourd'hui
-//             ->with('user') // Charger les informations de l'utilisateur
-//             ->get();
-
-//         // Vérifier si des pointages ont été trouvés
-//         if ($pointages->isEmpty()) {
-//             return response()->json([
-//                 'success' => false,
-//                 'message' => 'Aucun pointage trouvé pour cette promotion depuis sa date de début.',
-//             ], 404);
-//         }
-
-//         return response()->json([
-//             'success' => true,
-//             'message' => 'Pointages des apprenants et formateurs récupérés avec succès.',
-//             'pointages' => $pointages,
-//         ]);
-//     }
-
 public function MesPointages()
 {
     // Récupérer l'utilisateur connecté
@@ -628,35 +538,7 @@ public function MesPointages()
     ]);
 }
 
-// pointageAujourdhui
-    // public function pointageAujourdhui()
-    // {
-    //     // Récupérer l'utilisateur connecté
-    //     $user = auth()->user();
-
-    //     // Récupérer la date d'aujourd'hui
-    //     $dateAujourdhui = now()->toDateString();
-
-    //     // Récupérer les pointages de l'utilisateur connecté pour aujourd'hui
-    //     $pointages = Pointage::where('user_id', $user->id)
-    //         ->where('date', $dateAujourdhui)
-    //         ->get();
-
-    //     // Vérifier si des pointages existent
-    //     if ($pointages->isEmpty()) {
-    //         return response()->json([
-    //            'success' => false,
-    //            'message' => 'Aucun pointage trouvé pour aujourd\'hui.',
-    //         ], 404);
-    //     }
-    //     return response()->json([
-    //         'success' => true,
-    //        'message' => 'Votre pointage pour aujourd\'hui a été récupéré avec succès.',
-    //         'pointages' => $pointages,
-    //     ]);
-
-    // }
-    public function pointageAujourdhui()
+    public function pointageAujourdhui( Request $request)
     {
         // Récupérer l'utilisateur connecté
         $user = auth()->user();
@@ -684,106 +566,171 @@ public function MesPointages()
         ]);
 
     }
-    // pointageParSemaine
-//     public function pointageParSemaine()
-//     {
-//        $validator = validator($request->all(), [
-//         'promo_id' => ['required', 'exists:promos,id'], // Vérifie que la promo existe
-//     ]);
-
-//     if ($validator->fails()) {
-//         return response()->json([
-//             'success' => false,
-//             'errors' => $validator->errors(),
-//         ], 422);
-//     }
-
-//     // Récupérer la date d'aujourd'hui
-//     $date = $request->input('date');
-
-//     // Récupérer l'ID de la promotion depuis la requête
-//     $promotionId = $request->input('promo_id');
-
-//     // Récupérer les utilisateurs (apprenants et formateurs) qui appartiennent à la promotion
-//     $users = User::whereHas('promos', function($query) use ($promotionId) {
-//         $query->where('promos.id', $promotionId);
-//     })
-//     ->whereHas('roles', function($query) {
-//         $query->whereIn('name', ['Apprenant', 'Formateur']);
-//     })
-//     ->pluck('id'); // Récupère uniquement les IDs des utilisateurs
-
-//     // Récupérer les pointages des utilisateurs pour aujourd'hui
-//     $pointages = Pointage::whereIn('user_id', $users)
-//         ->where('date', $date)
-//         ->with('user') // Charger les informations de l'utilisateur en même temps
-//         ->get();
-
-//     // Vérifier si des pointages ont été trouvés
-//     if ($pointages->isEmpty()) {
-//         return response()->json([
-//             'success' => false,
-//             'message' => 'Aucun apprenant ou formateur n\'a pointé aujourd\'hui dans cette promotion.',
-//         ], 404);
-//     }
-
-//     return response()->json([
-//         'success' => true,
-//         'message' => 'Pointages des apprenants et formateurs récupérés avec succès.',
-//         'pointages' => $pointages,
-//     ]);
-// }
+ 
 public function pointageParSemaine(Request $request)
 {
-    // Validation et récupération des paramètres comme précédemment
-  // Valider l'entrée pour s'assurer que promo_id est fourni et valide
-  $validator = validator($request->all(), [
-    'promo_id' => ['required', 'exists:promos,id'], // Vérifie que la promo existe
-    'date' => ['required', 'date'], // Vérifie que la date est valide
-]);
+       // Validation de la requête
+       $validator = validator($request->all(), [
+        'promo_id' => ['required', 'exists:promos,id'],
+        'start_date' => ['required', 'date'],
+        'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+    ]);
 
-if ($validator->fails()) {
-    return response()->json([
-        'success' => false,
-        'errors' => $validator->errors(),
-    ], 422);
-}
-
-// Récupérer la date donnée depuis la requête
-$date = $request->input('date');
-$promoId = $request->input('promo_id');
-
-    // Calculer le début et la fin de la semaine
-    $startOfWeek = Carbon::parse($date)->startOfWeek();
-    $endOfWeek = Carbon::parse($date)->endOfWeek();
-
-    // Récupérer les utilisateurs concernés
-    $users = User::whereHas('promos', function($query) use ($promoId) {
-        $query->where('promos.id', $promoId);
-    })
-    ->whereHas('roles', function($query) {
-        $query->whereIn('name', ['Apprenant', 'Formateur']);
-    })
-    ->pluck('id');
-
-    // Récupérer les pointages de la semaine
-    $pointages = Pointage::whereIn('user_id', $users)
-        ->whereBetween('date', [$startOfWeek, $endOfWeek])
-        ->with('user')
-        ->get();
-
-    // Structurer les données pour renvoyer par jour
-    $result = [];
-    foreach ($pointages as $pointage) {
-        $jour = Carbon::parse($pointage->date)->format('l'); // Obtenir le jour de la semaine
-        $result[$pointage->user_id]['user'] = $pointage->user;
-        $result[$pointage->user_id]['date'][$jour] = $pointage->heure_present; // Stocker l'heure présente
+    if ($validator->fails()) {
+        return response()->json([
+            'success' => false,
+            'errors' => $validator->errors(),
+        ], 422);
     }
 
-    // Renvoyer les données structurées
+    // Récupérer les paramètres
+    $startDate = Carbon::parse($request->input('start_date'))->startOfDay();
+    $endDate = Carbon::parse($request->input('end_date'))->endOfDay();
+    $promoId = $request->input('promo_id');
+
+    // Récupérer les utilisateurs et leurs pointages
+    $users = User::whereHas('promos', function ($query) use ($promoId) {
+        $query->where('promos.id', $promoId);
+    })
+    ->whereHas('roles', function ($query) {
+        $query->whereIn('name', ['Apprenant', 'Formateur']);
+    })
+    ->get();
+
+    // Récupérer les pointages de la période sélectionnée
+    $pointages = Pointage::whereIn('user_id', $users->pluck('id'))
+        ->whereBetween('date', [$startDate, $endDate])
+        ->get()
+        ->groupBy('user_id');
+
+    // Structurer les données pour chaque utilisateur
+    $result = [];
+    foreach ($users as $user) {
+        $userData = [
+            'user' => $user,
+            'dates' => [],
+        ];
+
+        foreach ($pointages[$user->id] ?? [] as $pointage) {
+            $jour = Carbon::parse($pointage->date)->format('Y-m-d');
+            $heure = $pointage->heure_present;
+            $status = 'Absent';
+
+            // Définir l'heure de pointage ou 'Retard' si l'heure est après 09:00
+            if ($heure) {
+                $status = Carbon::parse($heure)->gt('09:00:00') ? 'Retard' : 'Présent';
+            }
+
+            $userData['dates'][$jour] = $status;
+        }
+
+        // Compléter les jours manquants avec 'Absent'
+        $period = Carbon::parse($startDate)->toPeriod($endDate);
+        foreach ($period as $date) {
+            $formattedDate = $date->format('Y-m-d');
+            if (!isset($userData['dates'][$formattedDate])) {
+                $userData['dates'][$formattedDate] = 'Absent';
+            }
+        }
+
+        $result[] = $userData;
+    }
+
+    // Vérifier si un export PDF est demandé
+    if ($request->has('export') && $request->input('export') === 'pdf') {
+        $pdf = Pdf::loadView('exports.pointages', ['pointages' => $result, 'start_date' => $startDate, 'end_date' => $endDate]);
+        return $pdf->download('pointages.pdf');
+    }
+
+    // Renvoyer la réponse structurée en JSON
     return response()->json([
         'success' => true,
-        'pointages' => array_values($result), // Pour obtenir un tableau indexé
+        'pointages' => $result,
+    ]);
+}
+public function pointageParPeriode(Request $request)
+{
+    // Validation de la requête
+    $validator = Validator::make($request->all(), [
+        'promo_id' => ['required', 'exists:promos,id'],
+        'start_date' => ['required', 'date'],
+        'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+        'export' => ['nullable', 'in:pdf'], // Ajout de la validation pour l'export PDF
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'success' => false,
+            'errors' => $validator->errors(),
+        ], 422);
+    }
+
+    // Récupérer les paramètres
+    $startDate = Carbon::parse($request->input('start_date'))->startOfDay();
+    $endDate = Carbon::parse($request->input('end_date'))->endOfDay();
+    $promoId = $request->input('promo_id');
+
+    // Récupérer les utilisateurs et leurs pointages
+    $users = User::whereHas('promos', function ($query) use ($promoId) {
+        $query->where('promos.id', $promoId);
+    })
+    ->whereHas('roles', function ($query) {
+        $query->whereIn('name', ['Apprenant', 'Formateur']);
+    })
+    ->get();
+
+    // Récupérer les pointages de la période sélectionnée
+    $pointages = Pointage::whereIn('user_id', $users->pluck('id'))
+        ->whereBetween('date', [$startDate, $endDate])
+        ->get()
+        ->groupBy('user_id');
+
+    // Dates de la période
+    $datesRange = [];
+    for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
+        $datesRange[] = $date->format('Y-m-d');
+    }
+
+    // Structurer les données pour chaque utilisateur
+    $result = [];
+    foreach ($users as $user) {
+        $userData = [
+            'user' => $user,
+            'dates' => [],
+        ];
+
+        // Vérifier les jours de pointage pour l'utilisateur
+        foreach ($datesRange as $jour) {
+            // Vérifier si l'utilisateur a pointé ce jour-là
+            if (isset($pointages[$user->id]) && $pointages[$user->id]->where('date', $jour)->isNotEmpty()) {
+                $pointage = $pointages[$user->id]->where('date', $jour)->first();
+                $heure = $pointage->heure_present;
+                $status = Carbon::parse($heure)->gt('18:00') ? 'Retard' : 'Présent';
+                $userData['dates'][$jour] = $status;
+                
+            }
+        }
+
+        // Ne conserver que les dates où il y a eu un pointage
+        if (!empty($userData['dates'])) {
+            $result[] = $userData;
+        }
+    }
+
+    // Vérifier si un export PDF est demandé
+    if ($request->has('export') && $request->input('export') === 'pdf') {
+        $pdf = \PDF::loadView('exports.pointages', [
+            'pointages' => $result,
+            'start_date' => $startDate->format('Y-m-d'),
+            'end_date' => $endDate->format('Y-m-d')
+        ]);
+        return $pdf->download('pointages.pdf');
+    }
+
+    // Renvoyer la réponse structurée en JSON
+    return response()->json([
+        'success' => true,
+        'pointages' => $result,
     ]);
 }
 
@@ -795,9 +742,10 @@ public function pointageParSemaineUnPromo(Request $request, $promo_id)
     $endOfWeek = Carbon::parse($request->input('end_date'))->endOfWeek();
 
     // Récupérer les apprenants associés à la promo via la table de liaison
-    $apprenants = User::whereHas('apprenantPromo', function ($query) use ($promo_id) {
+    $apprenants = User::whereHas('promos', function ($query) use ($promo_id) {
         $query->where('promo_id', $promo_id);
     })->get();
+
 
     // Récupérer les pointages de la semaine pour ces apprenants
     $pointages = Pointage::whereIn('user_id', $apprenants->pluck('id'))

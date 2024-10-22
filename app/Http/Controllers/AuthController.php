@@ -60,10 +60,11 @@ class AuthController extends Controller
         RateLimiter::clear($throttleKey); // Réinitialiser le compteur de tentatives réussie
 
         // Générer le token JWT
-        $token = auth()->guard('api')->login($user);
+        $token = auth()->guard('api')->login(user: $user);
 
-        return response()->json([
+        return response()->json(data: [
             'access_token' => $token,
+            'user' => $user,
             'token_type' => 'bearer',
             'expires_in' => auth()->guard('api')->factory()->getTTL() * 60, // Expiration en secondes
         ]);

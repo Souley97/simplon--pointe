@@ -63,4 +63,48 @@ class UserController extends Controller
     })->get(); // Récupère tous les utilisateurs ayant le rôle de Chef de Projet
     return response()->json($chefs);
 }
+
+public function personnelListe()
+{
+    // Récupérer les formateurs avec leur rôle et leurs promos
+    $formateurs = User::whereHas('roles', function ($query) {
+        $query->whereIn('name', ['Formateur', 'ChefDeProjet', 'Vigile']); // Récupérer uniquement les formateurs ici
+    })
+    ->with('roles') // Charger les rôles associés
+    ->get();
+
+    // Ajouter les rôles sous forme de chaîne de caractères à chaque formateur
+    $formateurs->each(function($formateur) {
+        $formateur->role = $formateur->roles->first()->name; // Supposer que chaque formateur n'a qu'un rôle
+    });
+
+    // Vérifier si des formateurs sont présents
+    if ($formateurs->isEmpty()) {
+        return response()->json([
+            'success' => true,
+            'message' => 'Aucun formateur trouvé.',
+        ], 404);
+    }
+
+    // Récupérer un chef de projet séparément
+    $chefDeProjet = User::whereHas('roles', function ($query) {
+        $query->where('name', 'ChefDeProjet');
+    })->with('roles')->first();
+
+    // Vérifier si un chef de projet est présent
+    if (!$chefDeProjet) {
+        return response()->json([
+            'success' => true,
+            'message' => 'Aucun chef de projet trouvé.',
+            'formateurs' => $formateurs,
+        ], 404);
+    }
+
+    // Retourner les formateurs et le chef de projet
+    return response()->json([
+        'success' => true,
+        'message' => 'Formateurs et chef de projet récupérés avec succès.',
+        'formateurs' => $formateurs,
+    ]);
+}
 }
