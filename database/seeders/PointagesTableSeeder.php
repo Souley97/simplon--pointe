@@ -26,7 +26,7 @@ class PointagesTableSeeder extends Seeder
         foreach ($apprenants as $apprenant) {
             Pointage::create([
                 'type' => 'present', // 'present', 'absence', 'retard'
-                'date' => "2024-09-27", // Date aléatoire
+                'date' => "2024-10-21", // Date aléatoire
                 'heure_present' => Carbon::now()->subHours(rand(1, 4))->format('H:i:s'), // Heure d'arrivée aléatoire
                 'motif' => null,
                 'user_id' => $apprenant->id,
@@ -37,7 +37,7 @@ class PointagesTableSeeder extends Seeder
             ]);
             Pointage::create([
                 'type' => 'present', // 'present', 'absence', 'retard'
-                'date' => "2024-09-27", // Date aléatoire
+                'date' => "2024-10-22", // Date aléatoire
                 'heure_present' => Carbon::now()->subHours(rand(1, 4))->format('H:i:s'), // Heure d'arrivée aléatoire
                 'motif' => null,
                 'user_id' => $apprenant->id,
@@ -49,7 +49,7 @@ class PointagesTableSeeder extends Seeder
 
             Pointage::create([
                 'type' => 'retard',
-                'date' => "2024-09-30",
+                'date' => "2024-10-19",
                 'heure_present' => Carbon::now()->subHours(rand(1, 4))->format('H:i:s'),
                 'motif' => 'Problème de transport',
                 'user_id' => $apprenant->id,
@@ -61,7 +61,7 @@ class PointagesTableSeeder extends Seeder
 
             Pointage::create([
                 'type' => 'absence',
-                'date' => "2024-09-26",
+                'date' => "2024-10-23",
                 'heure_present' => null,
                 'motif' => 'Maladie',
                 'user_id' => $apprenant->id,
@@ -86,7 +86,7 @@ class PointagesTableSeeder extends Seeder
 
             Pointage::create([
                 'type' => 'absence',
-                'date' => "2024-09-29",
+                'date' => "2024-10-18",
                 'heure_present' => null,
                 'motif' => 'Réunion externe',
                 'user_id' => $formateur->id,

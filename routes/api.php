@@ -100,17 +100,19 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/mes/conges', [CongeController::class, 'myConge']);
 
      // Routes pour formations
-    Route::get('/formations', [FormationController::class, 'index']);
     Route::post('/formations', [FormationController::class, 'store']);
     Route::get('/formations/{formation}', [FormationController::class, 'show']);
     Route::post('/formations/{formation}', [FormationController::class, 'update']);
     Route::delete('/formations/{formation}', [FormationController::class, 'destroy']);
     Route::get('/formations/{id}/promos', [FormationController::class, 'promos']);
 
-
+    Route::get('/formations', [FormationController::class, 'index']);
+    Route::get('/fabriques', [FabriqueController::class, 'index']);
+    
+    Route::get('/chefs-projet', [UserController::class, 'chefsProjet']);
+        
      // Routes pour fabriques
 
-    Route::get('/fabriques', [FabriqueController::class, 'index']);
     Route::post('/fabriques', [FabriqueController::class, 'store']);
     Route::get('/fabriques/{fabrique}', [FabriqueController::class, 'show']);
     Route::post('/fabriques/{fabrique}', [FabriqueController::class, 'update']);
@@ -118,7 +120,6 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/fabriques/{id}/promos', [FabriqueController::class, 'promos']);
 
 
-    Route::get('/chefs-projet', [UserController::class, 'chefsProjet']);
 
     Route::middleware('auth:api')->group(function () {
 
@@ -162,3 +163,4 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
         'role' => $request->user()->roles->pluck('name') // Renvoie les noms des rôles
     ]);
 });
+

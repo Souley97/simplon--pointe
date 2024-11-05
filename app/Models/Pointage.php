@@ -13,7 +13,7 @@ class Pointage extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'user_id', 'type', 'motif', 'date', 'heure_present', 'heure_depart', 'created_by'
+        'user_id', 'type', 'motif', 'date', 'heure_present', 'heure_depart',  'created_by'
 
     ];
 

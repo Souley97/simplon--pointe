@@ -17,6 +17,8 @@ return new class extends Migration
             $table->date('date_debut');
             $table->date('date_fin');
             $table->enum('statut', ['encours', 'termine']);
+            // heur horaires pointage
+            $table->time( 'horaire');
             $table->foreignId('formateur_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('chef_projet_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('fabrique_id')->constrained()->onDelete('cascade');

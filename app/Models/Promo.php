@@ -21,6 +21,7 @@ class Promo extends Model
         'formateur_id',
         'chef_projet_id',
         'formation_id',
+        'horaire'
     ];
 
     public function fabrique()

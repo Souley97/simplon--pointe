@@ -27,6 +27,7 @@ class PromosTableSeeder extends Seeder
             'date_debut' => '2023-11-24',
             'date_fin' => '2024-10-17',
             'statut' => 'encours',
+            'horaire' => '09:00',
             'fabrique_id' => 3, // Associe une fabrique aléatoirement
             'formateur_id' => 30, // Associe un formateur aléatoirement
             'chef_projet_id' => $chefsDeProjet->random()->id, // Associe un chef de projet aléatoirement
@@ -38,6 +39,8 @@ class PromosTableSeeder extends Seeder
             'date_debut' => '2024-02-01',
             'date_fin' => '2024-11-30',
             'statut' => 'encours',
+            'horaire' => '09:00',
+
             'fabrique_id' => $fabriques->random()->id,
             'formateur_id' => $formateurs->random()->id,
             'chef_projet_id' => $chefsDeProjet->random()->id,
@@ -49,6 +52,8 @@ class PromosTableSeeder extends Seeder
             'date_debut' => '2024-03-01',
             'date_fin' => '2024-08-01',
             'statut' => 'termine',
+            'horaire' => '10:00',
+
             'fabrique_id' => $fabriques->random()->id,
             'formateur_id' => $formateurs->random()->id,
             'chef_projet_id' => $chefsDeProjet->random()->id,

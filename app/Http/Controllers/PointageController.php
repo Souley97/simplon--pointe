@@ -23,36 +23,36 @@ class PointageController extends Controller
      public function pointageArrivee(Request $request)
      {
          // Utilisateur connecté
-         $vigile = auth()->user();
-
-         // Vérifier si l'utilisateur est un vigile
-         if (!$vigile->hasRole('Vigile')) {
-             return response()->json([
-                 'success' => false,
-                 'message' => 'Vous n\'êtes pas autorisé à accéder à cette section.',
-             ], 403);
-         }
-
+        //  $vigile = auth()->user();
+     
+        //  // Vérifier si l'utilisateur est un vigile
+        //  if (!$vigile->hasRole('Vigile')) {
+        //      return response()->json([
+        //          'success' => false,
+        //          'message' => 'Vous n\'êtes pas autorisé à accéder à cette section.',
+        //      ], 403);
+        //  }
+     
          // Validation des données d'entrée
          $validator = validator($request->all(), [
              'matricule' => ['required', 'exists:users,matricule'],
          ]);
-
+     
          if ($validator->fails()) {
              return response()->json([
                  'success' => false,
                  'errors' => $validator->errors(),
              ], 422);
          }
-
+     
          // Récupérer l'utilisateur
          $user = User::where('matricule', $request->matricule)->firstOrFail();
-
+     
          // Vérifier s'il y a déjà un pointage pour aujourd'hui
          $pointage = Pointage::where('user_id', $user->id)
                              ->where('date', now()->toDateString())
                              ->first();
-
+     
          // Si l'utilisateur a déjà pointé son arrivée ou est marqué présent/retard, renvoyer un message d'erreur
          if ($pointage && $pointage->type != 'absence') {
              return response()->json([
@@ -60,14 +60,33 @@ class PointageController extends Controller
                  'message' => 'L\'utilisateur a déjà pointé pour cette date.',
              ], 400);
          }
-
-
-         // Déterminer l'heure actuelle et le type de pointage
+     
+         // Déterminer si l'utilisateur est un apprenant ou un formateur
+         if ($user->hasRole('Formateur')) {
+             // Récupérer la promotion active pour ce formateur
+             $promo = Promo::where('formateur_id', $user->id)
+                           ->where('statut', 'encours')
+                           ->first();
+         } else {
+             // Récupérer la promotion active pour l'apprenant
+             $promo = $user->promos()->where('statut', 'encours')->first();
+         }
+     
+         if (!$promo || !$promo->horaire) {
+             return response()->json([
+                 'success' => false,
+                 'message' => 'Aucune promotion active trouvée pour cet utilisateur ou horaire manquant.',
+             ], 404);
+         }
+     
+         // Déterminer l'heure actuelle et l'horaire de la promotion
          $heure_actuelle = now();
-         $heure_limite = now()->setTime(9, 0);
+         $heure_limite = Carbon::parse($promo->horaire);
+     
+         // Déterminer le type de pointage : 'retard' ou 'present'
          $type = $heure_actuelle->greaterThan($heure_limite) ? 'retard' : 'present';
-
-         // Si l'utilisateur a été marqué comme absence, mettre à jour le pointage existant
+     
+         // Si l'utilisateur a été marqué comme absent, mettre à jour le pointage existant
          if ($pointage && $pointage->type == 'absence') {
              $pointage->update([
                  'type' => $type,
@@ -80,10 +99,10 @@ class PointageController extends Controller
                  'type' => $type,
                  'date' => now()->toDateString(),
                  'heure_present' => $heure_actuelle->format('H:i:s'),
-                 'created_by' => $vigile->id,
+                 'created_by' => 32,
              ]);
          }
-
+     
          return response()->json([
              'success' => true,
              'message' => 'Pointage d\'arrivée enregistré avec succès',
@@ -91,7 +110,9 @@ class PointageController extends Controller
              'user' => $user,
          ]);
      }
-
+     
+     
+     
 
      public function pointageDepart(Request $request)
      {
@@ -697,6 +718,8 @@ public function pointageParPeriode(Request $request)
         $userData = [
             'user' => $user,
             'dates' => [],
+              'absences' => 0, // Add absences count
+            'tardies' => 0,  // Add tardies count
         ];
 
         // Vérifier les jours de pointage pour l'utilisateur
@@ -705,9 +728,11 @@ public function pointageParPeriode(Request $request)
             if (isset($pointages[$user->id]) && $pointages[$user->id]->where('date', $jour)->isNotEmpty()) {
                 $pointage = $pointages[$user->id]->where('date', $jour)->first();
                 $heure = $pointage->heure_present;
-                $status = Carbon::parse($heure)->gt('18:00') ? 'Retard' : 'Présent';
+                $status = Carbon::parse($heure)->gt('05:00') ? 'Retard' : 'Présent';
                 $userData['dates'][$jour] = $status;
-                
+                if ($status === 'Retard') {
+                    $userData['tardies']++;
+                }
             }
         }
 
@@ -734,6 +759,89 @@ public function pointageParPeriode(Request $request)
     ]);
 }
 
+// public function pointageParPeriode(Request $request)
+// {
+//     // Validation de la requête
+//     $validator = Validator::make($request->all(), [
+//         'promo_id' => ['required', 'exists:promos,id'],
+//         'start_date' => ['required', 'date'],
+//         'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+//     ]);
+
+//     if ($validator->fails()) {
+//         return response()->json([
+//             'success' => false,
+//             'errors' => $validator->errors(),
+//         ], 422);
+//     }
+
+//     // Récupérer les paramètres
+//     $startDate = Carbon::parse($request->input('start_date'))->startOfDay();
+//     $endDate = Carbon::parse($request->input('end_date'))->endOfDay();
+//     $promoId = $request->input('promo_id');
+
+//     // Récupérer les utilisateurs et leurs pointages
+//     $users = User::whereHas('promos', function ($query) use ($promoId) {
+//         $query->where('promos.id', $promoId);
+//     })
+//     ->whereHas('roles', function ($query) {
+//         $query->whereIn('name', ['Apprenant', 'Formateur']);
+//     })
+//     ->get();
+
+//     // Récupérer les pointages de la période sélectionnée
+//     $pointages = Pointage::whereIn('user_id', $users->pluck('id'))
+//         ->whereBetween('date', [$startDate, $endDate])
+//         ->get()
+//         ->groupBy('user_id');
+
+//     // Dates de la période
+//     $datesRange = [];
+//     for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
+//         $datesRange[] = $date->format('Y-m-d');
+//     }
+
+//     // Structurer les données pour chaque utilisateur
+//     $result = [];
+//     foreach ($users as $user) {
+//         $userData = [
+//             'user' => $user,
+//             'dates' => [],
+//             'absences' => 0, // Add absences count
+//             'tardies' => 0,  // Add tardies count
+//         ];
+
+//         // Vérifier les jours de pointage pour l'utilisateur
+//         foreach ($datesRange as $jour) {
+//             // Vérifier si l'utilisateur a pointé ce jour-là
+//             if (isset($pointages[$user->id]) && $pointages[$user->id]->where('date', $jour)->isNotEmpty()) {
+//                 $pointage = $pointages[$user->id]->where('date', $jour)->first();
+//                 $heure = $pointage->heure_present;
+//                 $status = Carbon::parse($heure)->gt('18:00') ? 'Retard' : 'Présent';
+//                 $userData['dates'][$jour] = $status;
+
+//                 if ($status === 'Retard') {
+//                     $userData['tardies']++;
+//                 }
+//             } else {
+//                 // If the user didn't point, mark as absent
+//                 $userData['dates'][$jour] = 'Absent';
+//                 $userData['absences']++;
+//             }
+//         }
+
+//         // Ne conserver que les dates où il y a eu un pointage
+//         if (!empty($userData['dates'])) {
+//             $result[] = $userData;
+//         }
+//     }
+
+//     // Renvoyer la réponse structurée en JSON
+//     return response()->json([
+//         'success' => true,
+//         'pointages' => $result,
+//     ]);
+// }
 
 
 public function pointageParSemaineUnPromo(Request $request, $promo_id)
@@ -787,33 +895,3 @@ public function pointageParSemaineUnPromo(Request $request, $promo_id)
 
 
 }
-
-
-    //     public function pointageParSemaine()
-    //     {
-    //         // Récupérer l'utilisateur connecté
-    //         $user = auth()->user();
-
-    //         // Récupérer la date d'aujourd'hui
-    //         $dateAujourdhui = now()->toDateString();
-
-    //         // Récupérer le premier jour de la semaine pour la date d'aujourd'hui
-    //         $premierJourSemaine = now()->startOfWeek()->toDateString();
-
-    //         // Récupérer les pointages de l'utilisateur connecté pour la semaine
-    //         $pointages = Pointage::where('user_id', $user->id)
-    //             ->whereBetween('date', [$premierJourSemaine, $dateAujourdhui])
-    //             ->get();
-
-    //         // Vérifier si des pointages existent
-    //     // Vérifier si des pointages existent
-    // if ($pointages->isEmpty()) {
-    //     return response()->json([
-    //        'success' => true,
-    //        'message' => 'Aucun pointage trouvé pour cette semaine.',
-    //        'pointages' => [],
-    //     ], 200);
-    // }
-
-    //         }
-

@@ -170,9 +170,11 @@ class PromoController extends Controller
             'date_debut' => $request->input('date_debut'),
             'date_fin' => $request->input('date_fin'),
             'statut' => 'encours',
+            'horaire' => $request->input('horaire'),
             'fabrique_id' => $request->input('fabrique_id'),
             'formateur_id' => auth()->user()->id, // Le formateur connecté est assigné
             'chef_projet_id' => $request->input('chef_projet_id'),
+
             'formation_id' => $request->input('formation_id'),
         ]);
         // si le nom de promo dans un formation
@@ -243,6 +245,7 @@ class PromoController extends Controller
         'date_debut' => $request->input('date_debut'),
         'date_fin' => $request->input('date_fin'),
         'statut' => $request->input('statut', 'encours'), // Si le statut peut être mis à jour
+        'horaire' => $request->input('horaire'),
         'fabrique_id' => $request->input('fabrique_id'),
         'chef_projet_id' => $request->input('chef_projet_id'),
         'formation_id' => $request->input('formation_id'),
