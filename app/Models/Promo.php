@@ -20,6 +20,7 @@ class Promo extends Model
         'fabrique_id',
         'formateur_id',
         'chef_projet_id',
+        'assistant_id',
         'formation_id',
         'horaire'
     ];

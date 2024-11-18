@@ -27,6 +27,7 @@ Route::post('/logout', [AuthController::class, 'logout']);
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::get('/qr/{matricule}', [QRCodeController::class, 'showQr']);
+Route::post('/promos/{promoId}/assign-assistant', [PromoController::class, 'assignAssistant']);
 
 Route::middleware('auth:api')->group(function () {
 
@@ -36,6 +37,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/vigile/inscrire', [AuthController::class, 'inscrireVigile']);
     Route::post('/apprenants/import', [ApprenantController::class, 'inscrireApprenantsExcel']);
     Route::post('/apprenant/inscrire', [ApprenantController::class, 'inscrireApprenant']);
+    Route::get('/apprenants/promo', [ApprenantController::class, 'promoApprenants']);
 
 
 
@@ -44,7 +46,9 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/promos/encours', [PromoController::class, 'mesPromosEncours']);
     Route::get('/promos/terminer', [PromoController::class, 'mesPromosTermine']);
 
+
     Route::get('/promos', [PromoController::class, 'index']);
+    Route::get('/promos/{promo}', [PromoController::class, 'show']);
     Route::post('/promos', [PromoController::class, 'store']);
     Route::put('/promos', [PromoController::class, 'update']);
 

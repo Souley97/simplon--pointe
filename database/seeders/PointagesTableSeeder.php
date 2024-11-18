@@ -67,9 +67,6 @@ class PointagesTableSeeder extends Seeder
                 'user_id' => $apprenant->id,
                 'created_by' =>32,
 
-
-
-
             ]);
         }
 
@@ -77,7 +74,7 @@ class PointagesTableSeeder extends Seeder
         foreach ($formateurs as $formateur) {
             Pointage::create([
                 'type' => 'present',
-                'date' => Carbon::now()->subDays(rand(0, 29))->format('Y-m-d'),
+                'date' => "2024-11-12",
                 'heure_present' => Carbon::now()->subHours(rand(1, 4))->format('H:i:s'),
                 'motif' => null,
                 'user_id' => $formateur->id,
@@ -85,9 +82,9 @@ class PointagesTableSeeder extends Seeder
             ]);
 
             Pointage::create([
-                'type' => 'absence',
+                'type' => 'present',
                 'date' => "2024-10-18",
-                'heure_present' => null,
+                'heure_present' => Carbon::now()->subHours(rand(1, 4))->format('H:i:s'),
                 'motif' => 'Réunion externe',
                 'user_id' => $formateur->id,
                 'created_by' =>31,
@@ -110,7 +107,7 @@ class PointagesTableSeeder extends Seeder
                 'created_by' =>32,
             ]);
             Pointage::create([
-                'type' => 'absence',
+                'type' => 'present',
                 'date' => Carbon::now()->subDays(rand(0, 29))->format('Y-m-d'),
                 'heure_present' => Carbon::now()->subHours(rand(1, 4))->format('H:i:s'),
                 'motif' => null,
@@ -120,7 +117,7 @@ class PointagesTableSeeder extends Seeder
             Pointage::create([
                 'type' => 'absence',
                 'date' => Carbon::now()->subDays(rand(0, 29))->format('Y-m-d'),
-                'heure_present' => null,
+                'heure_present' => "08:29:08",
                 'motif' => 'Réunion externe',
                 'user_id' => $formateur->id,
                 'created_by' =>32,

@@ -45,13 +45,12 @@ class ApprenantInscriptionNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->subject('Inscription sur la plateforme')
-            ->greeting('Bonjour ' . $this->user->prenom . ' ' . $this->user->nom . ',')
+        ->subject('Inscription sur Simplon Pointage')
+        ->greeting('Bonjour ' . $this->user->prenom . ' ' . $this->user->nom . ',')
             ->line('Vous avez été inscrit avec succès sur notre plateforme.')
             ->line('Voici vos informations de connexion :')
             ->line('**Email** : ' . $this->user->email)
             ->line('**Mot de passe** : ' . $this->password)
-            ->line('Nous vous recommandons de changer ce mot de passe après votre première connexion.')
             ->action('Accéder à la plateforme', url('https://simplon-pointage.vercel.app'))
             ->line('Merci de faire partie de notre communauté.');
     }

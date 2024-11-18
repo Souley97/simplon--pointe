@@ -228,6 +228,29 @@ public function MesPointages(Request $request)
     ]);
 }
 
+// liste des promos avec les apprenants
+public function promoApprenants()
+{
+    $user = auth()->user();
+
+    // Récupérer les promos auxquelles l'utilisateur est inscrit
+    $promos = $user->promos;
+
+    if ($promos->isEmpty()) {
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Aucune promotion trouvée.',
+        ], 404);
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Promotions récupérées avec succès.',
+        'promos' => $promos,
+    ]);
+}
+
 
 
 }

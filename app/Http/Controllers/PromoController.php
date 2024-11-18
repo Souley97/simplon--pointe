@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use App\Models\Promo;
 use App\Http\Requests\StorePromoRequest;
 use App\Http\Requests\UpdatePromoRequest;
+use Illuminate\Http\Request;
 
 class PromoController extends Controller
 {
@@ -35,7 +36,7 @@ class PromoController extends Controller
     public function promosTerminees()
     {
         // liste des promos
-        $promos = Promo::where('statut', 'termine')->get();
+        $promos = Promo::where('statut', 'termine')->with('fabrique')->get();
         // return json
         return response()->json($promos);
 
@@ -73,7 +74,7 @@ class PromoController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Promotions récupérées avec succès.',
-            'promos' => $promos,
+            'data' => $promos,
         ]);
     }
 
@@ -157,7 +158,7 @@ class PromoController extends Controller
     public function store(StorePromoRequest $request)
     {
         // Vérification si l'utilisateur est un formateur
-        if (!auth()->user()->hasRole('Formateur')) {
+        if (!auth()->user()->hasRole(['Formateur', 'Admin'])) {
             return response()->json([
                'success' => false,
                'message' => 'Vous n\'êtes pas autorisé à effectuer cette action.',
@@ -165,7 +166,7 @@ class PromoController extends Controller
         }
 
         // Création de la promotion
-        $promo = Promo::file([
+        $promo = Promo::create([
             'nom' => $request->input('nom'),
             'date_debut' => $request->input('date_debut'),
             'date_fin' => $request->input('date_fin'),
@@ -174,12 +175,8 @@ class PromoController extends Controller
             'fabrique_id' => $request->input('fabrique_id'),
             'formateur_id' => auth()->user()->id, // Le formateur connecté est assigné
             'chef_projet_id' => $request->input('chef_projet_id'),
-
             'formation_id' => $request->input('formation_id'),
         ]);
-        // si le nom de promo dans un formation
-
-
 
         // Retourner la promotion nouvellement créée
         return response()->json([
@@ -258,6 +255,29 @@ class PromoController extends Controller
        'promo' => $promo,
     ]);
 }
+
+
+public function assignAssistant(Request $request, $promoId)
+{
+    // Validate the assistant_id in the request
+    $request->validate([
+        'assistant_id' => 'required|exists:users,id',
+    ]);
+
+    // Find the promotion by ID
+    $promo = Promo::findOrFail($promoId);
+
+    // Assign the assistant_id to the promotion
+    $promo->assistant_id = $request->input('assistant_id');
+    $promo->save();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Assistant assigned successfully.',
+        'promo' => $promo,
+    ]);
+}
+
 
 
     /**

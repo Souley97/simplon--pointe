@@ -19,7 +19,7 @@ class StorePromoRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
-    public function rules(): array
+    public function rules()
     {
         return [
             // validation
@@ -27,10 +27,10 @@ class StorePromoRequest extends FormRequest
      'nom' => 'required|string|max:25|min:2',
         'date_debut' => 'required|date|after_or_equal:today',
         'date_fin' => 'required|date|after:date_debut',
+        'horaire' => 'required|string|max:100',
         'fabrique_id' => 'required|exists:fabriques,id',
         'chef_projet_id' => 'required|exists:users,id',
-        'formation_id' => 'required|exists:formations,id',
-
+        'formation_id' => 'required|exists:formations,id'
         ];
     }
 }
