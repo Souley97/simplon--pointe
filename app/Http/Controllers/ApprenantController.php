@@ -167,7 +167,7 @@ class ApprenantController extends Controller
                 $promo->apprenants()->attach($user->id);
 
                 // Envoyer un email de notification à l'utilisateur avec ses informations d'accès
-                $user->notify(new ApprenantInscriptionNotification($user, $password));
+                // $user->notify(new ApprenantInscriptionNotification($user, $password));
             }
 
             return response()->json([

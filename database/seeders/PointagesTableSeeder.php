@@ -15,113 +15,84 @@ class PointagesTableSeeder extends Seeder
     public function run(): void
     {
         // Récupérer quelques utilisateurs (apprenants et formateurs)
-        $apprenants = User::role('Apprenant')->take(30)->get(); // Récupérer 10 apprenants
+        $apprenants = User::role('Apprenant')->take(60)->get(); // Récupérer 30 apprenants
         $formateurs = User::role('Formateur')->take(3)->get(); // Récupérer 3 formateurs
 
-
-
-
+        // Générer des pointages pour chaque mois : octobre, novembre
+        $months = ['2024-10', '2024-11'];
 
         // Création des pointages pour les apprenants
         foreach ($apprenants as $apprenant) {
-            Pointage::create([
-                'type' => 'present', // 'present', 'absence', 'retard'
-                'date' => "2024-10-21", // Date aléatoire
-                'heure_present' => Carbon::now()->subHours(rand(1, 4))->format('H:i:s'), // Heure d'arrivée aléatoire
-                'motif' => null,
-                'user_id' => $apprenant->id,
-                'created_by' =>32,
+            foreach ($months as $month) {
+                for ($day = 1; $day <= Carbon::parse("$month-01")->daysInMonth; $day++) {
+                    $date = Carbon::parse("$month-$day");
 
+                    // Ignorer les week-ends
+                    if ($date->isWeekend()) {
+                        continue;
+                    }
 
+                    // Générer une heure aléatoire et déterminer le type de pointage
+                    $heure_present = $this->getRandomHeure();
+                    $type = $this->getPointageType($heure_present);
 
-            ]);
-            Pointage::create([
-                'type' => 'present', // 'present', 'absence', 'retard'
-                'date' => "2024-10-22", // Date aléatoire
-                'heure_present' => Carbon::now()->subHours(rand(1, 4))->format('H:i:s'), // Heure d'arrivée aléatoire
-                'motif' => null,
-                'user_id' => $apprenant->id,
-                'created_by' =>32,
-
-
-
-            ]);
-
-            Pointage::create([
-                'type' => 'retard',
-                'date' => "2024-10-19",
-                'heure_present' => Carbon::now()->subHours(rand(1, 4))->format('H:i:s'),
-                'motif' => 'Problème de transport',
-                'user_id' => $apprenant->id,
-                'created_by' =>32,
-
-
-
-            ]);
-
-            Pointage::create([
-                'type' => 'absence',
-                'date' => "2024-10-23",
-                'heure_present' => null,
-                'motif' => 'Maladie',
-                'user_id' => $apprenant->id,
-                'created_by' =>32,
-
-            ]);
+                    Pointage::create([
+                        'type' => $type,
+                        'date' => $date->format('Y-m-d'),
+                        'heure_present' => $heure_present,
+                        'motif' => null,
+                        'user_id' => $apprenant->id,
+                        'created_by' => 21,
+                    ]);
+                }
+            }
         }
 
         // Création des pointages pour les formateurs
         foreach ($formateurs as $formateur) {
-            Pointage::create([
-                'type' => 'present',
-                'date' => "2024-11-12",
-                'heure_present' => Carbon::now()->subHours(rand(1, 4))->format('H:i:s'),
-                'motif' => null,
-                'user_id' => $formateur->id,
-                'created_by' =>31,
-            ]);
+            foreach ($months as $month) {
+                for ($day = 1; $day <= Carbon::parse("$month-01")->daysInMonth; $day++) {
+                    $date = Carbon::parse("$month-$day");
 
-            Pointage::create([
-                'type' => 'present',
-                'date' => "2024-10-18",
-                'heure_present' => Carbon::now()->subHours(rand(1, 4))->format('H:i:s'),
-                'motif' => 'Réunion externe',
-                'user_id' => $formateur->id,
-                'created_by' =>31,
-            ]);
+                    // Ignorer les week-ends
+                    if ($date->isWeekend()) {
+                        continue;
+                    }
 
-            Pointage::create([
-                'type' => 'present',
-                'date' => Carbon::now()->subDays(rand(0, 29))->format('Y-m-d'),
-                'heure_present' => Carbon::now()->subHours(rand(1, 4))->format('H:i:s'),
-                'motif' => null,
-                'user_id' => $formateur->id,
-                'created_by' =>31,
-            ]);
-            Pointage::create([
-                'type' => 'present',
-                'date' => Carbon::now()->subDays(rand(0, 29))->format('Y-m-d'),
-                'heure_present' => Carbon::now()->subHours(rand(1, 4))->format('H:i:s'),
-                'motif' => null,
-                'user_id' => $formateur->id,
-                'created_by' =>32,
-            ]);
-            Pointage::create([
-                'type' => 'present',
-                'date' => Carbon::now()->subDays(rand(0, 29))->format('Y-m-d'),
-                'heure_present' => Carbon::now()->subHours(rand(1, 4))->format('H:i:s'),
-                'motif' => null,
-                'user_id' => $formateur->id,
-                'created_by' =>32,
-            ]);
-            Pointage::create([
-                'type' => 'absence',
-                'date' => Carbon::now()->subDays(rand(0, 29))->format('Y-m-d'),
-                'heure_present' => "08:29:08",
-                'motif' => 'Réunion externe',
-                'user_id' => $formateur->id,
-                'created_by' =>32,
-            ]);
+                    // Générer une heure aléatoire et déterminer le type de pointage
+                    $heure_present = $this->getRandomHeure();
+                    $type = $this->getPointageType($heure_present);
+
+                    Pointage::create([
+                        'type' => $type,
+                        'date' => $date->format('Y-m-d'),
+                        'heure_present' => $heure_present,
+                        'motif' => null,
+                        'user_id' => $formateur->id,
+                        'created_by' => 21,
+                    ]);
+                }
+            }
         }
+    }
+
+    /**
+     * Obtenir un type de pointage en fonction de l'heure d'arrivée
+     */
+    private function getPointageType(string $heure): string
+    {
+        $pointageTime = Carbon::createFromFormat('H:i:s', $heure);
+
+        // Présent si avant 09:00:00, sinon retard
+        return $pointageTime->lte(Carbon::createFromTime(9, 0, 0)) ? 'present' : 'retard';
+    }
+
+    /**
+     * Générer une heure d'arrivée aléatoire
+     */
+    private function getRandomHeure(): string
+    {
+        // Retourner une heure entre 08:00 et 09:30
+        return Carbon::createFromTime(rand(8, 9), rand(0, 59), rand(0, 59))->format('H:i:s');
     }
 }

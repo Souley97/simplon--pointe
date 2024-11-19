@@ -23,7 +23,7 @@ class ApprenantPromoTableSeeder extends Seeder
             'matricule' => 'souleymane24',
             'telephone' => '766666666',
             'adresse' => 'malika',
-            'email' => 'souleymane9700@gmail.com',
+            'email' => 'soleymane9700@gmail.com',
             'password' => bcrypt('password'),
             'statut' => true,
             'sexe' => 'homme',
@@ -139,7 +139,7 @@ $apprenant = User::create([
         $apprenantRole = Role::firstOrCreate(['name' => 'Apprenant']);
 
          // Génère 20 apprenants via le factory
-        User::factory(20)->create()->each(function ($user) use ($apprenantRole) {
+        User::factory(10)->create()->each(function ($user) use ($apprenantRole) {
             // Assigner le rôle Apprenant
             $user->assignRole($apprenantRole);
         });

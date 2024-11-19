@@ -109,7 +109,6 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/formations/{formation}', [FormationController::class, 'update']);
     Route::delete('/formations/{formation}', [FormationController::class, 'destroy']);
     Route::get('/formations/{id}/promos', [FormationController::class, 'promos']);
-
     Route::get('/formations', [FormationController::class, 'index']);
     Route::get('/fabriques', [FabriqueController::class, 'index']);
     
@@ -120,8 +119,8 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/fabriques', [FabriqueController::class, 'store']);
     Route::get('/fabriques/{fabrique}', [FabriqueController::class, 'show']);
     Route::post('/fabriques/{fabrique}', [FabriqueController::class, 'update']);
-    Route::delete('/fabriques/{fabrique}', [FabriqueController::class, 'destroy']);
     Route::get('/fabriques/{id}/promos', [FabriqueController::class, 'promos']);
+    Route::delete('/fabriques/{fabrique}', [FabriqueController::class, 'destroy']);
 
 
 

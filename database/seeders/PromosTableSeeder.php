@@ -29,7 +29,7 @@ class PromosTableSeeder extends Seeder
             'statut' => 'encours',
             'horaire' => '09:00',
             'fabrique_id' => 3, // Associe une fabrique aléatoirement
-            'formateur_id' => 30, // Associe un formateur aléatoirement
+            'formateur_id' => 19, // Associe un formateur aléatoirement
             'chef_projet_id' => $chefsDeProjet->random()->id, // Associe un chef de projet aléatoirement
             'formation_id' => $formations->random()->id, // Associe une formation aléatoirement
         ]);

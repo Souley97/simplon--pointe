@@ -23,7 +23,7 @@ class DatabaseSeeder extends Seeder
         $this->call(FabriquesTableSeeder::class);
         $this->call(PromosTableSeeder::class);
 
-        $this->call(PointagesTableSeeder::class);
+        // $this->call(PointagesTableSeeder::class);
         $this->call(JustificatifsTableSeeder::class);
 
 
